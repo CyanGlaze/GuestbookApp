@@ -1,0 +1,134 @@
+<view class="container">
+  <!-- 顶部背景（含自定义导航栏，渐变贯穿） -->
+  <view class="top-bg">
+    <view class="circle circle-1"></view>
+    <view class="circle circle-2"></view>
+    <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+      <view class="nav-inner" style="height: {{navBarHeight}}px;">
+        <text class="nav-title">我的</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 用户卡片 -->
+  <view class="user-card">
+    <block wx:if="{{isLogin}}">
+      <view class="avatar-wrapper">
+        <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+      </view>
+      <view class="user-info">
+        <text class="nickname">{{userInfo.nickName}}</text>
+        <view class="auth-tag">
+          <text class="auth-icon">✓</text>
+          <text>已授权登录</text>
+        </view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="avatar-wrapper">
+        <view class="avatar-placeholder">👤</view>
+      </view>
+      <view class="user-info">
+        <text class="nickname">未登录</text>
+        <button class="login-btn" bindtap="onLogin">点击登录</button>
+      </view>
+    </block>
+  </view>
+
+  <!-- 功能区域 -->
+  <view class="action-area">
+    <block wx:if="{{isLogin}}">
+      <!-- 导入导出按钮 - 居中显示 -->
+      <view class="quick-actions">
+        <view class="quick-action-item" bindtap="uploadExcel">
+          <view class="quick-action-icon">📊</view>
+          <text class="quick-action-text">导入账本</text>
+          <text class="quick-action-desc">xlsx/xls</text>
+        </view>
+        <view class="quick-action-item" bindtap="exportBackup">
+          <view class="quick-action-icon">📤</view>
+          <text class="quick-action-text">导出备份</text>
+          <text class="quick-action-desc">保存数据</text>
+        </view>
+        <view class="quick-action-item" bindtap="importBackup">
+          <view class="quick-action-icon">📥</view>
+          <text class="quick-action-text">导入备份</text>
+          <text class="quick-action-desc">恢复数据</text>
+        </view>
+      </view>
+
+      <!-- 统计信息 -->
+      <view class="stats-section">
+        <view class="section-title">数据统计</view>
+        <view class="stats-grid">
+          <view class="stat-card">
+            <text class="stat-value">{{totalBooks}}</text>
+            <text class="stat-label">账本数量</text>
+          </view>
+          <view class="stat-card">
+            <text class="stat-value">{{totalRecords}}</text>
+            <text class="stat-label">记录总数</text>
+          </view>
+          <view class="stat-card">
+            <text class="stat-value">¥{{totalAmount}}</text>
+            <text class="stat-label">礼金总额</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 其他操作 -->
+      <view class="menu-section">
+        <view class="section-title">更多操作</view>
+        <view class="menu-list">
+          <view class="menu-item" bindtap="clearAllData">
+            <view class="menu-icon">🗑️</view>
+            <text class="menu-text danger">清空所有数据</text>
+            <text class="menu-arrow">›</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 退出登录 -->
+      <view class="logout-section">
+        <button class="logout-btn" bindtap="onLogout">退出登录</button>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="login-tip-box">
+        <text class="tip-icon">🔒</text>
+        <text class="tip-text">请先登录以使用全部功能</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 导入确认弹窗 -->
+  <view class="modal-mask" wx:if="{{showRenameModal}}" catchtouchmove="preventTouchMove">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">账本入库确认</text>
+        <view class="modal-close" bindtap="closeModal">×</view>
+      </view>
+      <view class="modal-body">
+        <view class="input-group">
+          <text class="label">账本名称</text>
+          <input class="name-input" value="{{tempName}}" bindinput="onInputName" focus placeholder="请输入账本名称" />
+        </view>
+        <view class="info-row">
+          <view class="info-item">
+            <text class="info-value">{{tempData.length}}</text>
+            <text class="info-label">条记录</text>
+          </view>
+          <view class="info-item">
+            <text class="info-value">¥{{tempTotal}}</text>
+            <text class="info-label">礼金总额</text>
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn-cancel" bindtap="closeModal">取消</button>
+        <button class="btn-confirm" bindtap="confirmSave">确认保存</button>
+      </view>
+    </view>
+  </view>
+</view>

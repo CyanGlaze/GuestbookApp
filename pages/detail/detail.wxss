@@ -1,0 +1,132 @@
+.container { height: 100vh; background: #f0f2f5; display: flex; flex-direction: column; overflow: hidden; }
+/* 顶部固定区域：flex 布局下自然固定 */
+.sticky-header { flex-shrink: 0; background: #fff; box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06); }
+/* 自定义导航栏 */
+.nav-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.nav-inner { display: flex; align-items: center; padding: 0 16rpx; }
+.nav-back {
+  width: 64rpx; height: 64rpx; display: flex; align-items: center; justify-content: center;
+  font-size: 56rpx; color: #fff; font-weight: 300; line-height: 1;
+}
+.nav-title { flex: 1; text-align: center; font-size: 32rpx; font-weight: 600; color: #fff; }
+.nav-right { width: 64rpx; }
+/* 账本信息栏 */
+.book-info-bar { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 32rpx 24rpx; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.book-title { display: flex; align-items: center; }
+.book-icon { font-size: 36rpx; margin-right: 12rpx; }
+.title-text { font-size: 32rpx; font-weight: 600; color: #fff; }
+.book-stats { display: flex; align-items: center; }
+.stat-item { font-size: 26rpx; color: rgba(255, 255, 255, 0.9); }
+.stat-divider { color: rgba(255, 255, 255, 0.5); margin: 0 16rpx; }
+/* 搜索框 */
+.search-box { display: flex; align-items: center; padding: 20rpx 32rpx; background: #fff; }
+.search-icon { font-size: 32rpx; margin-right: 16rpx; }
+.search-input {
+  flex: 1; height: 72rpx; background: #f0f2f5; border-radius: 36rpx; padding: 0 24rpx;
+  font-size: 28rpx; border: 2rpx solid transparent; box-sizing: border-box; transition: all 0.2s;
+}
+.search-box.focused .search-input { border-color: #667eea; background: #fff; }
+.search-right { display: flex; align-items: center; margin-left: 16rpx; }
+.count-tag { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-size: 22rpx; padding: 8rpx 16rpx; border-radius: 20rpx; }
+.clear-btn { width: 44rpx; height: 44rpx; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24rpx; color: #666; }
+/* 列表滚动区：flex 自适应剩余高度 */
+.list-scroll { flex: 1; min-height: 0; }
+/* 分组标题 — sticky 吸顶，top:0 相对于 scroll-view 视口 */
+.group-title { position: sticky; top: 0; z-index: 10; padding: 18rpx 32rpx 10rpx; font-size: 24rpx; font-weight: 700; color: #999; letter-spacing: 4rpx; background: #f0f2f5; }
+
+/* ========== 礼金卡片（尺寸完全保留原件） ========== */
+.gift-card { margin: 10rpx 24rpx; padding: 30rpx 32rpx; border-radius: 22rpx; border-left: 8rpx solid transparent; box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.03); transition: transform 0.15s ease; animation: cardFadeIn 0.25s ease both; }
+.gift-card:active { transform: scale(0.985); }
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(24rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* level 0: <50 */
+.card-level-0 { background: linear-gradient(135deg, #fafbfc 0%, #f2f3f5 100%); border-left-color: #c8ccd4; }
+/* level 1: 50~99 */
+.card-level-1 { background: linear-gradient(135deg, #f2fbf8 0%, #e6f5ee 100%); border-left-color: #7ec9b0; }
+/* level 2: 100~199 */
+.card-level-2 { background: linear-gradient(135deg, #f5f2ff 0%, #ece5fa 100%); border-left-color: #a898e0; }
+/* level 3: 200~499 */
+.card-level-3 { background: linear-gradient(135deg, #fff2f4 0%, #ffe6eb 100%); border-left-color: #ee8da0; }
+/* level 4: 500~999 */
+.card-level-4 { background: linear-gradient(135deg, #f0f6ff 0%, #e2eeff 100%); border-left-color: #6aadf0; }
+/* level 5: ≥1000 */
+.card-level-5 { background: linear-gradient(135deg, #fffcf0 0%, #fff1d6 100%); border-left-color: #ecc048; box-shadow: 0 4rpx 20rpx rgba(236, 192, 72, 0.18); }
+
+/* ========== 卡片内容（表格对齐结构） ========== */
+.card-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8rpx; }
+/* 每一行：左右两端对齐 */
+.card-row { display: flex; justify-content: space-between; align-items: center; }
+/* 只有备注没有地址时，占位保持右对齐位置 */
+.addr-placeholder { flex: 1; }
+
+/* 以下文字样式全部保留原件 */
+.name-wrap { flex: 1; min-width: 0; display: flex; align-items: center; }
+.name-avatar {
+  width: 56rpx; height: 56rpx; border-radius: 50%; flex-shrink: 0; margin-right: 16rpx;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26rpx; font-weight: 600; color: #fff;
+}
+.avatar-c0 { background: #667eea; }
+.avatar-c1 { background: #34d399; }
+.avatar-c2 { background: #fbbf24; }
+.avatar-c3 { background: #f472b6; }
+.avatar-c4 { background: #22d3ee; }
+.avatar-c5 { background: #a78bfa; }
+.name { flex: 1; min-width: 0; font-size: 32rpx; font-weight: 600; color: #2c2c2e; line-height: 1.4; }
+.addr { font-size: 25rpx; color: #8e8e93; display: flex; align-items: center; line-height: 1.4; flex: 1; min-width: 0; }
+.addr-icon { font-size: 20rpx; margin-right: 6rpx; flex-shrink: 0; }
+.remark { font-size: 23rpx; color: #aeaeb2; display: flex; align-items: center; line-height: 1.4; flex-shrink: 0; text-align: right; }
+.remark-icon { font-size: 18rpx; margin-right: 6rpx; flex-shrink: 0; }
+.highlight { color: #667eea; font-weight: 600; }
+.amount-wrap { display: flex; align-items: center; flex-shrink: 0; margin-left: 24rpx; }
+.amount { font-size: 36rpx; font-weight: 700; color: #667eea; line-height: 1.3; }
+.level-tag { font-size: 20rpx; padding: 4rpx 10rpx; border-radius: 14rpx; margin-left: 8rpx; }
+.tag-l2 { background: #f5f2ff; }
+.tag-l3 { background: #fff2f4; }
+.tag-l4 { background: #f0f6ff; }
+.tag-l5 { background: #fff7e0; }
+
+/* 空状态 */
+.empty-result { display: flex; flex-direction: column; align-items: center; padding: 120rpx 0; }
+.empty-icon { font-size: 80rpx; margin-bottom: 24rpx; opacity: 0.5; }
+.empty-text { font-size: 28rpx; color: #999; margin-bottom: 12rpx; }
+.empty-hint { font-size: 24rpx; color: #ccc; }
+/* 右侧字母索引 */
+.sidebar { position: fixed; right: 16rpx; top: 50%; transform: translateY(-50%); z-index: 200; display: flex; flex-direction: column; align-items: center; }
+.side-item { width: 40rpx; height: 36rpx; font-size: 20rpx; color: #999; display: flex; align-items: center; justify-content: center; }
+.side-item.active { color: #667eea; font-weight: 700; font-size: 24rpx; }
+/* 字母提示气泡 */
+.letter-bubble { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 120rpx; height: 120rpx; background: rgba(0, 0, 0, 0.6); border-radius: 24rpx; display: flex; align-items: center; justify-content: center; font-size: 56rpx; color: #fff; font-weight: 600; z-index: 300; }
+/* 添加按钮 */
+.add-float-btn { position: fixed; right: 40rpx; bottom: calc(120rpx + env(safe-area-inset-bottom)); width: 100rpx; height: 100rpx; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.4); z-index: 100; }
+.add-float-btn text { font-size: 56rpx; color: #fff; font-weight: 300; }
+/* 安全区域 */
+.safe-bottom { height: calc(200rpx + env(safe-area-inset-bottom)); }
+/* 编辑弹窗 */
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: modalFadeIn 0.15s ease; }
+.modal-content { width: 620rpx; background: #fff; border-radius: 24rpx; overflow: hidden; animation: modalPopIn 0.2s ease; }
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: translateY(60rpx) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 32rpx; border-bottom: 1rpx solid #f0f0f0; }
+.modal-title { font-size: 32rpx; font-weight: 600; color: #333; }
+.modal-close { font-size: 48rpx; color: #999; line-height: 1; }
+.modal-body { padding: 32rpx; }
+.input-row { display: flex; align-items: center; margin-bottom: 24rpx; }
+.input-label { width: 100rpx; font-size: 28rpx; color: #666; }
+.input-field { flex: 1; height: 80rpx; background: #f5f7fa; border-radius: 16rpx; padding: 0 24rpx; font-size: 28rpx; }
+.modal-footer { display: flex; padding: 24rpx 32rpx; gap: 24rpx; border-top: 1rpx solid #f0f0f0; }
+.btn-cancel, .btn-save { flex: 1; height: 80rpx; border-radius: 40rpx; font-size: 30rpx; display: flex; align-items: center; justify-content: center; border: none; }
+.btn-cancel { background: #f5f7fa; color: #666; }
+.btn-save { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+.btn-cancel::after, .btn-save::after { border: none; }

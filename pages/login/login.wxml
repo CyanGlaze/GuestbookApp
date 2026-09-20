@@ -1,0 +1,63 @@
+<view class="login-container">
+  <!-- 顶部装饰背景 -->
+  <view class="top-bg">
+    <view class="circle circle-1"></view>
+    <view class="circle circle-2"></view>
+    <view class="circle circle-3"></view>
+  </view>
+  
+  <!-- Logo区域 -->
+  <view class="logo-section">
+    <view class="logo-box">
+      <text class="logo-icon">📚</text>
+    </view>
+    <text class="app-name">礼金账本</text>
+    <text class="app-slogan">记录每一份情谊</text>
+  </view>
+  
+  <!-- 登录卡片 -->
+  <view class="login-card">
+    <view class="card-header">
+      <text class="card-title">微信登录</text>
+      <text class="card-desc">获取微信头像，一键开始使用</text>
+    </view>
+    
+    <!-- 一键登录按钮：点击选头像，选完自动登录 -->
+    <button 
+      class="wechat-login-btn" 
+      open-type="chooseAvatar" 
+      bindchooseavatar="onChooseAvatar"
+      disabled="{{logging}}"
+    >
+      <image class="wx-icon" src="/images/wechat.png" mode="aspectFit"></image>
+      <text class="btn-text">{{logging ? '登录中...' : '微信一键登录'}}</text>
+    </button>
+
+    <!-- 登录成功展示 -->
+    <view class="login-result" wx:if="{{tempAvatar}}">
+      <image class="result-avatar" src="{{tempAvatar}}" mode="aspectFill"></image>
+      <text class="result-text">头像获取成功，正在进入...</text>
+    </view>
+    
+    <!-- 功能说明 -->
+    <view class="features">
+      <view class="feature-item">
+        <text class="feature-icon">📊</text>
+        <text class="feature-text">导入Excel</text>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">🔍</text>
+        <text class="feature-text">智能搜索</text>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">✏️</text>
+        <text class="feature-text">便捷编辑</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 底部协议 -->
+  <view class="footer">
+    <text class="agreement">登录即表示同意《用户协议》和《隐私政策》</text>
+  </view>
+</view>

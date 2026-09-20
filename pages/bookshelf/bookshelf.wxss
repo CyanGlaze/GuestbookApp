@@ -1,0 +1,294 @@
+.container { min-height: 100vh; background: #f5f7fa; }
+
+/* ========== 顶部背景 ========== */
+.header-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0 32rpx 40rpx;
+}
+.nav-bar { width: 100%; }
+.header-content { display: flex; justify-content: space-between; align-items: center; }
+.title-section { display: flex; flex-direction: column; }
+.main-title { font-size: 44rpx; font-weight: 700; color: #fff; }
+.sub-title { font-size: 26rpx; color: rgba(255, 255, 255, 0.8); margin-top: 8rpx; }
+.user-avatar {
+  width: 80rpx; height: 80rpx; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2); border: 4rpx solid rgba(255, 255, 255, 0.5);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.user-avatar image { width: 100%; height: 100%; }
+.avatar-placeholder { font-size: 40rpx; }
+
+/* ========== 滚动区域 ========== */
+.shelf-scroll {
+  height: calc(100vh - 160rpx - env(safe-area-inset-top));
+  background: #f5f7fa; border-radius: 32rpx 32rpx 0 0; margin-top: -20rpx;
+}
+
+/* ========== 空状态 ========== */
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 120rpx 60rpx; }
+.empty-icon { font-size: 120rpx; margin-bottom: 32rpx; opacity: 0.6; }
+.empty-text { font-size: 32rpx; color: #666; margin-bottom: 16rpx; }
+.empty-desc { font-size: 26rpx; color: #999; margin-bottom: 48rpx; }
+.add-first-btn {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff; border: none; border-radius: 50rpx; padding: 24rpx 48rpx;
+  font-size: 30rpx; box-shadow: 0 12rpx 32rpx rgba(102, 126, 234, 0.3);
+}
+.add-first-btn::after { border: none; }
+.btn-icon { font-size: 36rpx; margin-right: 12rpx; }
+
+/* ========== 工具栏 ========== */
+.toolbar {
+  display: flex; justify-content: flex-end; align-items: center;
+  padding: 12rpx 32rpx 8rpx;
+}
+.view-toggle {
+  font-size: 24rpx; color: #999; padding: 10rpx 24rpx;
+  background: #fff; border-radius: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+/* ========== 三列网格 ========== */
+.shelf-grid {
+  display: flex; flex-wrap: wrap;
+  padding: 24rpx 32rpx;
+  gap: 24rpx;
+}
+.book-item {
+  width: calc((100% - 48rpx) / 3);
+  box-sizing: border-box;
+}
+
+/* ========== 核心立体感 ========== */
+.book-card {
+  background: #fff; 
+  border-radius: 4rpx 8rpx 8rpx 4rpx; 
+  overflow: hidden;
+  position: relative; 
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 300rpx;
+  border-bottom: 8rpx solid #e0e0e0; 
+  box-shadow: 6rpx 6rpx 0px #d6d6d6, 0 10rpx 20rpx rgba(0, 0, 0, 0.1);
+  animation: cardFadeIn 0.25s ease both;
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(24rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.book-card:active { 
+  transform: translateY(6rpx) scale(0.98); 
+  border-bottom-width: 4rpx;
+  box-shadow: 3rpx 3rpx 0px #d6d6d6, 0 4rpx 10rpx rgba(0, 0, 0, 0.08);
+}
+
+.book-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 16rpx; }
+
+.book-color-0 { background: #eef2ff; }
+.book-color-0 .book-spine { background: #5a7ce6; }
+.book-color-1 { background: #ecfdf5; }
+.book-color-1 .book-spine { background: #34d399; }
+.book-color-2 { background: #fffbeb; }
+.book-color-2 .book-spine { background: #fbbf24; }
+.book-color-3 { background: #fdf2f8; }
+.book-color-3 .book-spine { background: #f472b6; }
+.book-color-4 { background: #ecfeff; }
+.book-color-4 .book-spine { background: #22d3ee; }
+.book-color-5 { background: #f5f3ff; }
+.book-color-5 .book-spine { background: #a78bfa; }
+
+/* ========== 书脊排版布局 ========== */
+.book-content {
+  padding: 16rpx 8rpx;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.book-icon { 
+  font-size: 32rpx; 
+  margin-bottom: 12rpx; 
+}
+
+/* 书名竖排居中 */
+.book-name {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 6rpx;
+  font-size: 26rpx; 
+  font-weight: 700; 
+  color: #333; 
+  white-space: nowrap;
+  overflow: hidden;
+  max-height: 140rpx;
+  margin-bottom: auto; /* 把下面的空间推到底部 */
+}
+
+/* 【核心魔法】左下角的时间落款备注 */
+/* 【修改点】备注：换列时呈现“两端分离”的断层感 */
+.shelf-grid .book-desc {
+  position: absolute; 
+  bottom: 40rpx; /* 稍微往上提一点，给分离出的第二列腾出空间 */
+  left: 18rpx; 
+  writing-mode: vertical-lr; 
+  text-orientation: mixed;
+  letter-spacing: 2rpx;
+  font-size: 18rpx; 
+  color: #a89888; 
+  opacity: 0.8;
+  
+  /* 【核心魔法】制造断层分离 */
+  padding-top: 44rpx;     /* 整体往下砸出大约两个字高度的深坑 */
+  text-indent: -44rpx;    /* 用负值把第一列单独拽回悬崖边，只让第二列掉进坑里 */
+  
+  max-height: 120rpx;     /* 容器必须加高，不然第二列掉下去就被截断了 */
+  max-width: 50rpx;       /* 依然限制最多两列 */
+  overflow: hidden;  
+  display: block;
+  z-index: 2; 
+}
+
+
+
+
+.book-bottom { 
+  width: 100%;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  margin-top: 12rpx;
+  margin-bottom: 20rpx; /* 底部信息整体上移，离开卡片底边 */
+}
+.book-meta { display: flex; align-items: center; margin-bottom: 4rpx; }
+.meta-item { font-size: 20rpx; color: #666; }
+.meta-divider { color: #ddd; margin: 0 6rpx; }
+.book-date { font-size: 18rpx; color: #999; }
+
+/* 新增按钮 */
+.add-item .add-card {
+  background: #fcfcfc; border: none; border-radius: 4rpx 8rpx 8rpx 4rpx; height: 300rpx;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-sizing: border-box;
+  border-bottom: 8rpx solid #eeeeee; 
+  box-shadow: 6rpx 6rpx 0px #e8e8e8, 0 10rpx 20rpx rgba(0, 0, 0, 0.04);
+  position: relative;
+  animation: cardFadeIn 0.25s ease both;
+}
+.add-item .add-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 16rpx;
+  border-right: 3rpx dashed #ddd;
+}
+.add-icon {
+  width: 56rpx; height: 56rpx; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff; font-size: 36rpx; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8rpx; box-shadow: 0 6rpx 16rpx rgba(102, 126, 234, 0.3);
+}
+.add-text { font-size: 20rpx; color: #bbb; }
+
+/* ========== 列表视图（保持横排不受影响） ========== */
+.shelf-list { padding: 12rpx 32rpx; }
+.list-item {
+  display: flex; align-items: center; background: #fff;
+  border-radius: 20rpx; padding: 28rpx 24rpx; margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  position: relative; overflow: hidden; transition: transform 0.15s;
+}
+.list-item:active { transform: scale(0.985); }
+.list-color-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 8rpx; }
+.bar-color-0 { background: #5a7ce6; }
+.bar-color-1 { background: #34d399; }
+.bar-color-2 { background: #fbbf24; }
+.bar-color-3 { background: #f472b6; }
+.bar-color-4 { background: #22d3ee; }
+.bar-color-5 { background: #a78bfa; }
+.list-icon { font-size: 44rpx; margin-right: 20rpx; flex-shrink: 0; }
+.list-info { flex: 1; min-width: 0; }
+.list-name {
+  font-size: 30rpx; font-weight: 600; color: #333; margin-bottom: 6rpx;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.shelf-list .list-desc {
+  font-size: 22rpx; color: #aaa; margin-bottom: 6rpx;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: block;
+  writing-mode: horizontal-tb; /* 强制列表里横排 */
+}
+.list-meta { display: flex; align-items: center; font-size: 22rpx; color: #999; }
+.meta-dot { margin: 0 8rpx; }
+.list-amount {
+  font-size: 34rpx; font-weight: 700; color: #667eea;
+  margin-right: 12rpx; flex-shrink: 0;
+}
+.list-arrow { font-size: 36rpx; color: #ccc; flex-shrink: 0; }
+
+.add-list-item { border: 3rpx dashed #ddd; background: #fff; }
+.add-list-icon {
+  width: 64rpx; height: 64rpx; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff; font-size: 40rpx; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6rpx 16rpx rgba(102, 126, 234, 0.3);
+}
+.add-list-name { color: #999 !important; font-weight: 400 !important; }
+
+/* ========== 安全区域 ========== */
+.safe-bottom { height: calc(120rpx + env(safe-area-inset-bottom)); }
+
+/* ========== 编辑弹窗 ========== */
+.modal-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;
+  animation: modalFadeIn 0.15s ease;
+}
+.modal-content { width: 600rpx; background: #fff; border-radius: 24rpx; overflow: hidden; animation: modalPopIn 0.2s ease; }
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: translateY(60rpx) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 32rpx; border-bottom: 1rpx solid #f0f0f0;
+}
+.modal-title { font-size: 32rpx; font-weight: 600; color: #333; }
+.modal-close { font-size: 48rpx; color: #999; line-height: 1; }
+.modal-body { padding: 32rpx; }
+.edit-item { margin-bottom: 28rpx; }
+.edit-label { font-size: 28rpx; color: #666; margin-bottom: 16rpx; display: block; }
+.edit-input {
+  width: 100%; height: 88rpx; background: #f5f7fa; border-radius: 16rpx;
+  padding: 0 24rpx; font-size: 30rpx; box-sizing: border-box;
+}
+.icon-grid { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.icon-item {
+  width: 72rpx; height: 72rpx; background: #f5f7fa; border-radius: 12rpx;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36rpx; border: 2rpx solid transparent; transition: all 0.2s;
+}
+.icon-item.active { background: #f0f4ff; border-color: #667eea; }
+.modal-footer {
+  display: flex; padding: 24rpx 32rpx; gap: 24rpx; border-top: 1rpx solid #f0f0f0;
+}
+.btn-cancel, .btn-confirm {
+  flex: 1; height: 80rpx; border-radius: 40rpx; font-size: 30rpx;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-cancel { background: #f5f7fa; color: #666; border: none; }
+.btn-confirm { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; }
+.btn-cancel::after, .btn-confirm::after { border: none; }
+
+/* ========== 导入弹窗统计 ========== */
+.info-row { display: flex; gap: 24rpx; }
+.info-item {
+  flex: 1; background: #f5f7fa; border-radius: 16rpx;
+  padding: 24rpx; display: flex; flex-direction: column; align-items: center;
+}
+.info-value { font-size: 36rpx; font-weight: 700; color: #667eea; }
+.info-label { font-size: 22rpx; color: #999; margin-top: 8rpx; }

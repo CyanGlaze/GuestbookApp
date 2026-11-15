@@ -27,6 +27,7 @@ Page({
     editColor: DEFAULT_COLORS[0],
     viewMode: 'grid',
     isEmptyAfterDelete: false,
+    locked: false,
     showRenameModal: false,
     tempName: '',
     tempData: [],
@@ -42,8 +43,15 @@ Page({
   },
 
   onShow() {
-    this.loadBooks();
+    const isLogin = !!wx.getStorageSync('userInfo');
+    this.setData({ isLogin, locked: !isLogin });
+    // 退出登录后：不加载、不展示任何账本数据，仅提示登录
+    if (!isLogin) {
+      this.setData({ books: [], isEmptyAfterDelete: false, userInfo: null });
+      return;
+    }
     this.loadUserInfo();
+    this.loadBooks();
     const viewMode = wx.getStorageSync('shelfViewMode') || 'grid';
     this.setData({ viewMode });
     this.autoOpenIfSingle();
@@ -64,6 +72,7 @@ Page({
 
   // 书架仅一本时直接打开该书；多本或空书架保持原展示流程
   autoOpenIfSingle() {
+    if (!this.data.isLogin) return;
     if (this._skipNextShow) { this._skipNextShow = false; return; }
     let shelf;
     try { shelf = wx.getStorageSync('bookShelf') || []; } catch (e) { return; }
@@ -87,13 +96,17 @@ Page({
       const solid = b.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
       return Object.assign({}, b, {
         displaySolid: solid,
-        displayColor: toRgba(solid, 0.90)
+        displayColor: toRgba(solid, 0.62)
       });
     });
   },
 
   loadBooks() {
     try {
+      if (!this.data.isLogin) {
+        this.setData({ books: [], isEmptyAfterDelete: false });
+        return;
+      }
       const shelf = wx.getStorageSync('bookShelf') || [];
       this.setData({ books: this.decorate(shelf), isEmptyAfterDelete: false });
     } catch (e) {
@@ -117,10 +130,12 @@ Page({
   },
 
   openBook(e) {
+    if (!this.data.isLogin) return;
     this.openDetail(e.currentTarget.dataset.id);
   },
 
   onLongPressBook(e) {
+    if (!this.data.isLogin) return;
     // 兼容旧基础库：vibrateShort 不一定返回 Promise
     try {
       const p = wx.vibrateShort({ type: 'medium', fail: () => {} });

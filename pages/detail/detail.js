@@ -69,6 +69,12 @@ Page({
   onLoad(options) {
     const nav = getNavBarInfo();
     this.setData({ statusBarHeight: nav.statusBarHeight, navBarHeight: nav.navBarHeight });
+    // 未登录：禁止访问任何账本明细，退回登录页
+    if (!wx.getStorageSync('userInfo')) {
+      wx.showToast({ title: '请先登录', icon: 'none' });
+      setTimeout(() => wx.switchTab({ url: '/pages/mine/mine' }), 800);
+      return;
+    }
     if (options.id) {
       this.setData({ currentBookId: options.id });
       this.loadBookData(options.id);
@@ -76,6 +82,12 @@ Page({
   },
 
   onShow() {
+    // 未登录：禁止访问任何账本明细，退回登录页
+    if (!wx.getStorageSync('userInfo')) {
+      wx.showToast({ title: '请先登录', icon: 'none' });
+      setTimeout(() => wx.switchTab({ url: '/pages/mine/mine' }), 800);
+      return;
+    }
     if (this.data.currentBookId) {
       this.loadBookData(this.data.currentBookId);
     }

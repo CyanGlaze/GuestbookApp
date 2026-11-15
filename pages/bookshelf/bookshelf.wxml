@@ -5,7 +5,7 @@
       <view class="header-content" style="height: {{navBarHeight}}px;">
         <view class="title-section">
           <text class="main-title">📚 礼金书架</text>
-          <text class="sub-title">共 {{books.length}} 本账谱</text>
+          <text class="sub-title">{{locked ? '请登录后查看' : '共 ' + books.length + ' 本账谱'}}</text>
         </view>
         <view class="user-avatar" bindtap="goToMine">
           <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
@@ -18,8 +18,19 @@
   <!-- 书架内容 -->
   <scroll-view scroll-y class="shelf-scroll" refresher-enabled refresher-triggered="{{isRefreshing}}" bindrefresherrefresh="onRefresh">
 
+    <!-- 未登录：锁定账本，提示登录（不展示任何账本数据） -->
+    <view class="empty-state" wx:if="{{locked}}">
+      <view class="empty-icon">🔒</view>
+      <text class="empty-text">请先登录</text>
+      <text class="empty-desc">登录后即可查看与管理你的礼金账本</text>
+      <button class="add-first-btn" bindtap="goToMine">
+        <text class="btn-icon">👤</text>
+        <text>去登录</text>
+      </button>
+    </view>
+
     <!-- 空状态：首次为空 -->
-    <view class="empty-state" wx:if="{{books.length === 0 && !isEmptyAfterDelete}}">
+    <view class="empty-state" wx:elif="{{books.length === 0 && !isEmptyAfterDelete}}">
       <view class="empty-icon">📖</view>
       <text class="empty-text">书架空空如也</text>
       <text class="empty-desc">记录人情往来，从此不再乱</text>
@@ -55,7 +66,6 @@
           <view class="book-item" bindtap="openBook" bindlongpress="onLongPressBook" data-id="{{item.id}}" data-title="{{item.title}}" data-index="{{index}}">
             <view class="book-card" style="background-color: {{item.displayColor}};">
               <view class="book-spine" style="background-color: {{item.displaySolid}};"></view>
-              <view class="book-pages"></view>
               <!-- 参考图装饰：礼尚往来 / 双喜竖条 / 嘉宾礼簿 -->
               <view class="book-cover-art">
                 <view class="cover-side">礼尚往来</view>

@@ -385,3 +385,50 @@
   font-size: 22rpx; color: #969ba5; line-height: 1.8;
 }
 .agree-link { color: #5b6fd8; }
+
+/* ============================================================
+   iOS 27 Real Glass 增强：真毛玻璃 + 入场动效（安全版）
+   模糊置于 ::before 且 pointer-events:none，内容 z-index 置顶，避免吞触摸。
+   ============================================================ */
+
+/* 1) 让可交互卡片透出真实毛玻璃：降低填充透明度 + 添加 ::before 模糊层 */
+.login-card { background: linear-gradient(160deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.28)); }
+.user-card { background: rgba(255, 255, 255, 0.42); }
+.quick-action-item { background: rgba(255, 255, 255, 0.42); }
+.menu-list { background: rgba(255, 255, 255, 0.42); }
+.logout-btn { background: rgba(255, 255, 255, 0.44); }
+.overview-card { background: rgba(255, 255, 255, 0.42); }
+
+/* 安全模糊层：仅装饰，不拦截触摸；内容子元素抬到其上方 */
+.login-card, .user-card, .quick-action-item, .menu-list, .logout-btn {
+  position: relative;
+  overflow: hidden;
+}
+.login-card::before, .user-card::before, .quick-action-item::before,
+.menu-list::before, .logout-btn::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 2) 入场动效：自上而下错落浮现 */
+.login-logo-card { animation: rgPopIn 0.5s var(--rg-ease) both; }
+.login-title { animation: rgFadeUp 0.5s var(--rg-ease) 0.05s both; }
+.login-subtitle { animation: rgFadeUp 0.5s var(--rg-ease) 0.10s both; }
+.login-card { animation: rgFadeUp 0.55s var(--rg-ease) 0.12s both; }
+.feature-row { animation: rgFadeUp 0.5s var(--rg-ease) 0.20s both; }
+.agreement { animation: rgFadeUp 0.5s var(--rg-ease) 0.30s both; }
+.user-card { animation: rgFadeUp 0.5s var(--rg-ease) both; }
+.section-head { animation: rgFadeUp 0.5s var(--rg-ease) both; }
+.quick-actions { animation: rgFadeUp 0.5s var(--rg-ease) 0.06s both; }
+.overview-card { animation: rgFadeUp 0.5s var(--rg-ease) 0.12s both; }
+.menu-list { animation: rgFadeUp 0.5s var(--rg-ease) 0.18s both; }
+.logout-section { animation: rgFadeUp 0.5s var(--rg-ease) 0.24s both; }
+
+/* 3) 环境光浮球：让顶部彩光缓慢流动（不拦截触摸） */
+.circle-1 { animation: rgFloat 11s ease-in-out infinite; }
+.circle-2 { animation: rgFloat 13s ease-in-out infinite 1s; }
+.circle-3 { animation: rgFloat 15s ease-in-out infinite 2s; }

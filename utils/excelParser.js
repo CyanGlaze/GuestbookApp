@@ -1,15 +1,12 @@
-// 本地引入xlsx，不依赖npm
-const XLSX = require('./xlsx.js');
-
 /**
- * 解析Excel为标准object[]
- * @param {ArrayBuffer} fileBuffer Excel二进制数据
- * @returns {Array} 格式化后的礼金数据
+ * Excel 解析工具（纯本地，无网络请求）。
+ * 按表头名定位列，兼容「姓名/名字」「礼金/金额」等常见写法。
  */
-export function parseExcel(fileBuffer) {
-  let result = []; // 强制初始化为空数组
+const XLSX = require('./xlsx.mini.js');
+
+function parseExcel(fileBuffer) {
+  const result = [];
   try {
-    // 纯前端解析配置，无Node.js依赖
     const workbook = XLSX.read(fileBuffer, {
       type: 'array',
       cellStyles: false,
@@ -17,37 +14,39 @@ export function parseExcel(fileBuffer) {
       sheetStubs: false,
       bookVBA: false
     });
+    if (!workbook.SheetNames.length) return result;
 
-    // 无工作表则返回空数组
-    if (workbook.SheetNames.length === 0) {
-      wx.showToast({ title: 'Excel无有效工作表', icon: 'none' });
-      return result;
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
+    if (rows.length < 2) return result;
+
+    const headers = rows[0].map(h => String(h || '').trim());
+    const idxOf = (names) => headers.findIndex(h => names.indexOf(h) > -1);
+    const iName = idxOf(['姓名', '名字', '来宾']);
+    const iAmount = idxOf(['礼金', '金额', '份子钱']);
+    const iAddr = idxOf(['地址', '单位', '住址']);
+    const iRemark = idxOf(['备注', '说明']);
+    if (iName === -1) return result;
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i] || [];
+      const name = String(row[iName] || '').trim();
+      if (!name) continue;
+      const amount = iAmount > -1
+        ? Number(String(row[iAmount] || '').replace(/[,，¥￥\s元]/g, '')) || 0
+        : 0;
+      result.push({
+        '姓名': name,
+        '礼金': amount,
+        '地址': iAddr > -1 ? String(row[iAddr] || '').trim() : '',
+        '备注': iRemark > -1 ? String(row[iRemark] || '').trim() : ''
+      });
     }
-
-    // 读取第一个工作表
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-
-    // 转为JSON并兜底
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-      header: ['地址', '姓名', '礼金', '备注'],
-      skipHeader: true
-    }) || [];
-
-    // 过滤空数据，格式化字段
-    result = jsonData.map(item => {
-      const safeItem = typeof item === 'object' && item !== null ? item : {};
-      return {
-        姓名: safeItem.姓名 || '无',
-        地址: safeItem.地址 || '无',
-        礼金: safeItem.礼金 !== undefined ? safeItem.礼金 : '无',
-        备注: safeItem.备注 || '无'
-      };
-    }).filter(item => item.姓名 !== '无' || item.地址 !== '无');
-
   } catch (e) {
     console.error('Excel解析失败：', e);
-    wx.showToast({ title: '仅支持.xlsx格式', icon: 'none' });
+    wx.showToast({ title: '文件解析失败，请确认是 .xlsx 格式', icon: 'none' });
   }
   return result;
 }
+
+module.exports = { parseExcel: parseExcel };

@@ -1,10 +1,10 @@
 <view class="container">
   <!-- 顶部固定区域 -->
   <view class="sticky-header">
-    <!-- 自定义导航栏（渐变贯穿） -->
+    <!-- 自定义导航栏（毛玻璃贯穿） -->
     <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
       <view class="nav-inner" style="height: {{navBarHeight}}px;">
-        <view class="nav-back" bindtap="goBack">‹</view>
+        <view class="nav-back" catchtap="goBack">‹</view>
         <text class="nav-title">账本详情</text>
         <view class="nav-right"></view>
       </view>
@@ -36,15 +36,15 @@
   <scroll-view class="list-scroll" scroll-y scroll-into-view="{{scrollTarget}}" scroll-with-animation>
     <view wx:for="{{displayData}}" wx:for-item="group" wx:key="letter" id="letter-{{group.letter === '#' ? 'special' : group.letter}}">
       <view class="group-title">{{group.letter}}</view>
-      
-      <view class="gift-card card-level-{{item.amountLevel || 0}}" wx:for="{{group.items}}" wx:key="index" bindlongpress="onLongPressCard" data-item="{{item}}">
+
+      <view class="gift-card card-level-{{item.amountLevel || 0}}" wx:for="{{group.items}}" wx:key="_key" bindlongpress="onLongPressCard" data-item="{{item}}">
         <view class="card-content">
           <!-- 第一行：姓名左（带头像）+ 金额右（带档位徽标） -->
           <view class="card-row">
             <view class="name-wrap">
               <view class="name-avatar avatar-c{{item.avatarColor}}">{{item.firstLetter}}</view>
               <view class="name">
-                <text wx:for="{{item.nameSeg}}" wx:key="idx" class="{{item.hit ? 'highlight' : ''}}">{{item.text}}</text>
+                <text wx:for="{{item.nameSeg}}" wx:for-item="seg" wx:key="id" class="{{seg.hit ? 'highlight' : ''}}">{{seg.text}}</text>
               </view>
             </view>
             <view class="amount-wrap">
@@ -56,7 +56,7 @@
           <view class="card-row" wx:if="{{item['地址'] || item['备注']}}">
             <view class="addr" wx:if="{{item['地址']}}">
               <text class="addr-icon">📍</text>
-              <text wx:for="{{item.addrSeg}}" wx:key="idx" class="{{item.hit ? 'highlight' : ''}}">{{item.text}}</text>
+              <text wx:for="{{item.addrSeg}}" wx:for-item="seg" wx:key="id">{{seg.text}}</text>
             </view>
             <view class="addr-placeholder" wx:else></view>
             <view class="remark" wx:if="{{item['备注']}}">
@@ -98,8 +98,8 @@
   </view>
 
   <!-- 编辑弹窗 -->
-  <view class="modal-mask" wx:if="{{showEditModal}}" catchtouchmove="preventTouchMove">
-    <view class="modal-content">
+  <view class="modal-mask" wx:if="{{showEditModal}}" catchtouchmove="preventTouchMove" bindtap="closeEditModal">
+    <view class="modal-content" catchtap="preventTouchMove">
       <view class="modal-header">
         <text class="modal-title">{{isAdding ? '新增记录' : '编辑记录'}}</text>
         <view class="modal-close" bindtap="closeEditModal">×</view>
@@ -124,7 +124,6 @@
       </view>
       <view class="modal-footer">
         <button class="btn-cancel" bindtap="closeEditModal">取消</button>
-        <!-- 改回正确的 -->
         <button class="btn-save" bindtap="saveFullEdit">保存</button>
       </view>
     </view>

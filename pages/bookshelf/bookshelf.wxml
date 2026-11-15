@@ -49,17 +49,27 @@
         </view>
       </view>
 
-      <!-- 网格视图 -->
-      <!-- 网格视图 -->
+      <!-- 网格视图：封面主色由行内样式提供，可自定义 -->
       <view class="shelf-grid" wx:if="{{viewMode === 'grid'}}">
         <block wx:for="{{books}}" wx:key="id">
           <view class="book-item" bindtap="openBook" bindlongpress="onLongPressBook" data-id="{{item.id}}" data-title="{{item.title}}" data-index="{{index}}">
-            <view class="book-card book-color-{{index % 6}}">
-              <view class="book-spine"></view>
+            <view class="book-card" style="background-color: {{item.displayColor}};">
+              <view class="book-spine" style="background-color: {{item.displaySolid}};"></view>
+              <view class="book-pages"></view>
+              <!-- 参考图装饰：礼尚往来 / 双喜竖条 / 嘉宾礼簿 -->
+              <view class="book-cover-art">
+                <view class="cover-side">礼尚往来</view>
+                <view class="cover-strip"><text class="cover-emblem">囍</text></view>
+                <view class="cover-guest">嘉宾 · GUEST BOOK · 礼簿</view>
+              </view>
               <view class="book-content">
-                <view class="book-icon">{{item.icon || '📋'}}</view>
-                <view class="book-name">{{item.title}}</view>
-                <!-- 【改动点】备注放在这里，作为左下角的时间落款 -->
+                <view class="book-top">
+                  <view class="book-color-dot" style="background-color: {{item.displaySolid}};"></view>
+                  <view class="book-color-line" style="background-color: {{item.displaySolid}};"></view>
+                </view>
+                <view class="book-title-area">
+                  <text class="book-name">{{item.title}}</text>
+                </view>
                 <view class="book-desc" wx:if="{{item.desc}}">{{item.desc}}</view>
                 <view class="book-bottom">
                   <view class="book-meta">
@@ -85,8 +95,8 @@
       <view class="shelf-list" wx:else>
         <block wx:for="{{books}}" wx:key="id">
           <view class="list-item" bindtap="openBook" bindlongpress="onLongPressBook" data-id="{{item.id}}" data-title="{{item.title}}" data-index="{{index}}">
-            <view class="list-color-bar bar-color-{{index % 6}}"></view>
-            <view class="list-icon">{{item.icon || '📋'}}</view>
+            <view class="list-color-bar" style="background-color: {{item.displaySolid}};"></view>
+            <view class="list-color-dot" style="background-color: {{item.displaySolid}};"></view>
             <view class="list-info">
               <view class="list-name">{{item.title}}</view>
               <view class="list-desc" wx:if="{{item.desc}}">{{item.desc}}</view>
@@ -128,12 +138,14 @@
           <text class="edit-label">账本说明</text>
           <input class="edit-input" value="{{editDesc}}" bindinput="onEditDesc" placeholder="如：2025春节、同事组" />
         </view>
+        <!-- 原图标选择入口改为「选择书本颜色」，操作方式不变 -->
         <view class="edit-item">
-          <text class="edit-label">选择图标</text>
-          <view class="icon-grid">
-            <view class="icon-item {{editIcon === item ? 'active' : ''}}" wx:for="{{iconList}}" wx:key="*this" bindtap="selectIcon" data-icon="{{item}}">
-              {{item}}
-            </view>
+          <text class="edit-label">书本颜色</text>
+          <view class="color-grid">
+            <view class="color-item {{editColor === item ? 'active' : ''}}"
+                  wx:for="{{colorOptions}}" wx:key="*this"
+                  bindtap="selectColor" data-color="{{item}}"
+                  style="background-color: {{item}};"></view>
           </view>
         </view>
       </view>

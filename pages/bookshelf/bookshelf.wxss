@@ -292,3 +292,571 @@
 }
 .info-value { font-size: 36rpx; font-weight: 700; color: #667eea; }
 .info-label { font-size: 22rpx; color: #999; margin-top: 8rpx; }
+
+/* ============================================================
+   iOS 毛玻璃主题（只覆盖视觉，尺寸与布局沿用上方原规则）
+   ============================================================ */
+.container { background: transparent; }
+
+/* 顶部：半透明玻璃导航栏，透出页面环境光 */
+.header-bg {
+  background: rgba(255, 255, 255, 0.58);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1rpx solid var(--glass-border);
+  box-shadow: 0 6rpx 24rpx rgba(31, 38, 63, 0.06);
+}
+.main-title { color: var(--ios-label); }
+.sub-title { color: var(--ios-secondary); }
+.user-avatar {
+  background: var(--glass-soft);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1rpx solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.shelf-scroll { background: rgba(255, 255, 255, 0.16); }
+.empty-text { color: var(--ios-label); }
+.empty-desc { color: var(--ios-secondary); }
+.add-first-btn {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.94), rgba(118, 75, 162, 0.94));
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10rpx 28rpx rgba(102, 126, 234, 0.26), inset 0 1rpx 0 rgba(255, 255, 255, 0.35);
+}
+
+.view-toggle {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1rpx solid var(--glass-border);
+  color: var(--ios-secondary);
+  box-shadow: var(--glass-shadow);
+}
+
+/* 书卡：玻璃纸面 + 细高光描边，保留书脊色条 */
+.book-card {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 8rpx 20rpx 20rpx 8rpx;
+  box-shadow: var(--glass-shadow), inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
+}
+.book-color-0 { background: rgba(238, 242, 255, 0.62); }
+.book-color-1 { background: rgba(236, 253, 245, 0.62); }
+.book-color-2 { background: rgba(255, 251, 235, 0.62); }
+.book-color-3 { background: rgba(253, 242, 248, 0.62); }
+.book-color-4 { background: rgba(236, 254, 255, 0.62); }
+.book-color-5 { background: rgba(245, 243, 255, 0.62); }
+.book-card:active {
+  transform: translateY(4rpx) scale(0.985);
+  border-bottom-width: 1rpx;
+  box-shadow: 0 4rpx 14rpx rgba(31, 38, 63, 0.1);
+}
+.book-name { color: var(--ios-label); }
+.book-desc { color: rgba(120, 110, 100, 0.7); }
+.meta-item { color: var(--ios-secondary); }
+.book-date { color: var(--ios-tertiary); }
+
+.add-item .add-card {
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 2rpx dashed rgba(102, 126, 234, 0.35);
+  border-radius: 8rpx 20rpx 20rpx 8rpx;
+  box-shadow: var(--glass-shadow);
+}
+.add-item .add-card::before { border-right: 2rpx dashed rgba(102, 126, 234, 0.3); }
+.add-icon {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+  box-shadow: 0 6rpx 16rpx rgba(102, 126, 234, 0.22), inset 0 1rpx 0 rgba(255, 255, 255, 0.4);
+}
+.add-text { color: var(--ios-secondary); }
+
+.list-item {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1rpx solid var(--glass-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--glass-shadow);
+}
+.list-name { color: var(--ios-label); }
+.list-desc { color: var(--ios-secondary); }
+.list-meta { color: var(--ios-tertiary); }
+.list-amount { color: #5b6fd8; }
+.list-arrow { color: var(--ios-tertiary); }
+.add-list-item { border: 2rpx dashed rgba(102, 126, 234, 0.35); background: rgba(255, 255, 255, 0.3); }
+.add-list-name { color: var(--ios-secondary) !important; }
+
+/* 弹窗：iOS sheet */
+.modal-mask {
+  background: rgba(20, 22, 32, 0.32);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+}
+.modal-content {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1rpx solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--glass-shadow-lg), inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
+}
+.modal-header, .modal-footer { border-color: var(--glass-divider); }
+.modal-title { color: var(--ios-label); }
+.modal-close { color: var(--ios-tertiary); }
+.edit-label { color: var(--ios-secondary); }
+.edit-input, .icon-item, .info-item {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1rpx solid rgba(255, 255, 255, 0.7);
+  color: var(--ios-label);
+}
+.icon-item.active { background: rgba(102, 126, 234, 0.16); border-color: rgba(102, 126, 234, 0.55); }
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1rpx solid var(--glass-border);
+  color: var(--ios-secondary);
+}
+.btn-confirm {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.94), rgba(118, 75, 162, 0.94));
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8rpx 20rpx rgba(102, 126, 234, 0.22), inset 0 1rpx 0 rgba(255, 255, 255, 0.35);
+}
+.info-value { color: #5b6fd8; }
+.info-label { color: var(--ios-secondary); }
+
+/* ============================================================
+   书本 3D 质感 v2：修复书名遮挡 + 立体封面
+   ============================================================ */
+.book-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6rpx 18rpx 18rpx 6rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(14px) saturate(170%);
+  box-shadow:
+    6rpx 8rpx 0 rgba(28, 36, 60, 0.10),
+    11rpx 15rpx 0 rgba(28, 36, 60, 0.06),
+    0 18rpx 36rpx rgba(31, 38, 63, 0.16),
+    inset 2rpx 0 0 rgba(255, 255, 255, 0.70),
+    inset 0 -6rpx 0 rgba(0, 0, 0, 0.045);
+}
+
+/* 封面：左上亮、右下暗的光泽渐变 */
+.book-color-0 { background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(218,228,255,0.62) 100%); }
+.book-color-1 { background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(212,244,230,0.62) 100%); }
+.book-color-2 { background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,238,196,0.62) 100%); }
+.book-color-3 { background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(250,220,236,0.62) 100%); }
+.book-color-4 { background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(210,242,248,0.62) 100%); }
+.book-color-5 { background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(230,222,255,0.62) 100%); }
+
+/* 书脊：圆柱高光 + 彩色 */
+.book-spine {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 22rpx;
+  border-right: 1rpx solid rgba(0, 0, 0, 0.10);
+  box-shadow: 3rpx 0 8rpx rgba(0, 0, 0, 0.14);
+  background: linear-gradient(90deg, rgba(0,0,0,0.20) 0%, rgba(255,255,255,0.30) 42%, rgba(255,255,255,0.05) 68%, rgba(0,0,0,0.16) 100%);
+}
+.book-color-0 .book-spine { background: linear-gradient(90deg, #3f59b5 0%, #8aa0ec 45%, #3f59b5 100%); }
+.book-color-1 .book-spine { background: linear-gradient(90deg, #1f8f68 0%, #6ed7ae 45%, #1f8f68 100%); }
+.book-color-2 .book-spine { background: linear-gradient(90deg, #c08b20 0%, #f6d284 45%, #c08b20 100%); }
+.book-color-3 .book-spine { background: linear-gradient(90deg, #c05a86 0%, #f0a8c6 45%, #c05a86 100%); }
+.book-color-4 .book-spine { background: linear-gradient(90deg, #1f8fa8 0%, #82d8e8 45%, #1f8fa8 100%); }
+.book-color-5 .book-spine { background: linear-gradient(90deg, #7452bf 0%, #bfa4ee 45%, #7452bf 100%); }
+
+/* 右侧书页层：细密纸纹 */
+.book-pages {
+  position: absolute; right: 0; top: 6rpx; bottom: 6rpx; width: 10rpx;
+  border-left: 1rpx solid rgba(0, 0, 0, 0.06);
+  border-radius: 0 14rpx 14rpx 0;
+  background: repeating-linear-gradient(180deg,
+    rgba(255,255,255,0.92) 0rpx, rgba(255,255,255,0.92) 3rpx,
+    rgba(186,192,206,0.55) 3rpx, rgba(186,192,206,0.55) 5rpx);
+}
+
+/* 内容分区：书名独占中部，任何元素都不再压在它上面 */
+.book-content {
+  padding: 18rpx 16rpx 20rpx 32rpx;
+  height: 100%; display: flex; flex-direction: column; align-items: center;
+}
+.book-top {
+  width: 100%; height: 44rpx; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.book-icon { font-size: 26rpx; margin-bottom: 0; }
+.book-seal {
+  width: 40rpx; height: 40rpx; line-height: 36rpx; text-align: center;
+  border: 2rpx solid rgba(178, 62, 52, 0.42); border-radius: 6rpx;
+  color: rgba(178, 62, 52, 0.60); font-size: 22rpx;
+  transform: rotate(-6deg);
+}
+.book-title-area {
+  flex: 1; width: 100%; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+/* 横排两行居中：彻底避免竖排空间不足被截断/被压 */
+.book-name {
+  writing-mode: horizontal-tb;
+  width: 100%; max-height: none; margin-bottom: 0;
+  font-size: 26rpx; font-weight: 700; color: #262a33;
+  line-height: 1.4; text-align: center; letter-spacing: 1rpx;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 备注改为静态单行横排，不再绝对定位遮挡书名 */
+.shelf-grid .book-desc {
+  position: static; bottom: auto; left: auto; z-index: auto;
+  writing-mode: horizontal-tb; text-indent: 0; padding-top: 0;
+  max-height: none; max-width: 100%; width: 100%;
+  font-size: 18rpx; color: rgba(90, 96, 108, 0.72);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: center; margin-bottom: 8rpx; flex-shrink: 0;
+}
+.book-bottom {
+  width: 100%; margin: 0; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 6rpx;
+}
+.book-meta { margin-bottom: 0; }
+.meta-item { font-size: 20rpx; color: #5b616c; font-weight: 600; }
+.meta-divider { color: rgba(0, 0, 0, 0.18); }
+.book-date { font-size: 18rpx; color: #8e939c; }
+
+.book-card:active {
+  transform: translateY(4rpx) scale(0.98);
+  border-bottom-width: 1rpx;
+  box-shadow: 3rpx 4rpx 0 rgba(28, 36, 60, 0.08), 0 8rpx 18rpx rgba(31, 38, 63, 0.12);
+}
+
+/* 落地投影 + 书架横板，强化 3D 空间感 */
+.book-item::after {
+  content: ''; display: block; height: 12rpx; margin: -8rpx 12rpx 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(31, 38, 63, 0.16) 0, rgba(31, 38, 63, 0) 70%);
+}
+.shelf-grid::after {
+  content: ''; display: block; width: 100%; height: 12rpx; margin-top: 10rpx;
+  border-radius: 6rpx;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(170, 178, 196, 0.35));
+  box-shadow: 0 8rpx 20rpx rgba(31, 38, 63, 0.08);
+}
+
+/* 新增账本卡沿用同一立体语言 */
+.add-item .add-card {
+  border-radius: 6rpx 18rpx 18rpx 6rpx;
+  box-shadow: 6rpx 8rpx 0 rgba(28, 36, 60, 0.06), 0 16rpx 30rpx rgba(31, 38, 63, 0.10), inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================================
+   统一毛玻璃封面 v3：网格 / 列表 / 新增卡 同一强度与表现
+   ============================================================ */
+.book-card,
+.list-item,
+.add-item .add-card,
+.add-list-item,
+.view-toggle {
+  -webkit-backdrop-filter: blur(20px) saturate(185%);
+  backdrop-filter: blur(20px) saturate(185%);
+  border: 1rpx solid rgba(255, 255, 255, 0.88);
+}
+/* 列表 / 新增 / 工具栏统一阴影；网格书卡保留原有 3D 多层阴影 */
+.list-item,
+.add-list-item,
+.view-toggle {
+  box-shadow: 0 10rpx 30rpx rgba(31, 38, 63, 0.12), inset 0 1rpx 0 rgba(255, 255, 255, 0.92);
+}
+
+/* 统一顶部高光，增强玻璃层次；伪元素不拦截触摸 */
+.book-card::before,
+.list-item::before,
+.add-item .add-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 42%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+}
+
+/* 6 色封面沿用同一套 0.80 → 0.62 渐变参数（仅色相区分），
+   毛玻璃强度、边框、高光完全一致，不产生样式差异 */
+
+/* 文字加深 + 白色细描边，保证半透明玻璃上的可读性 */
+.book-name, .list-name {
+  color: #20242c;
+  text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.92);
+}
+.meta-item, .book-date, .list-meta, .list-desc, .add-text {
+  color: #565c67;
+  text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.85);
+}
+.list-amount {
+  color: #4d61c9; font-weight: 700;
+  text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.9);
+}
+
+/* 新增账本的加号统一为正圆 */
+.add-icon, .add-list-icon {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ============================================================
+   书架封面 v4：更立体、更磨砂、背景不单调
+   ============================================================ */
+
+/* 页面环境光：多色光斑 + 纵向过渡，玻璃后面有内容可虚化 */
+.container {
+  background-color: #eef1f8;
+  background-image:
+    radial-gradient(circle at 6% 8%, rgba(102, 126, 234, 0.30) 0, rgba(102, 126, 234, 0) 42%),
+    radial-gradient(circle at 92% 18%, rgba(118, 75, 162, 0.26) 0, rgba(118, 75, 162, 0) 40%),
+    radial-gradient(circle at 14% 62%, rgba(72, 187, 190, 0.22) 0, rgba(72, 187, 190, 0) 38%),
+    radial-gradient(circle at 88% 78%, rgba(255, 168, 120, 0.20) 0, rgba(255, 168, 120, 0) 38%),
+    radial-gradient(circle at 50% 100%, rgba(102, 126, 234, 0.14) 0, rgba(102, 126, 234, 0) 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(238, 241, 248, 0) 42%);
+  background-repeat: no-repeat;
+}
+.shelf-scroll { background: rgba(255, 255, 255, 0.06); }
+
+/* 封面：三段渐变；六色共用同一套透明度参数，强度一致、仅色相区分 */
+.book-color-0 { background: linear-gradient(145deg, rgba(255,255,255,0.84) 0%, rgba(206,220,255,0.66) 52%, rgba(150,178,246,0.56) 100%); }
+.book-color-1 { background: linear-gradient(145deg, rgba(255,255,255,0.84) 0%, rgba(198,240,220,0.66) 52%, rgba(120,214,174,0.56) 100%); }
+.book-color-2 { background: linear-gradient(145deg, rgba(255,255,255,0.84) 0%, rgba(255,234,180,0.66) 52%, rgba(246,198,110,0.56) 100%); }
+.book-color-3 { background: linear-gradient(145deg, rgba(255,255,255,0.84) 0%, rgba(250,214,232,0.66) 52%, rgba(240,158,198,0.56) 100%); }
+.book-color-4 { background: linear-gradient(145deg, rgba(255,255,255,0.84) 0%, rgba(198,238,246,0.66) 52%, rgba(116,208,226,0.56) 100%); }
+.book-color-5 { background: linear-gradient(145deg, rgba(255,255,255,0.84) 0%, rgba(224,212,255,0.66) 52%, rgba(174,146,240,0.56) 100%); }
+
+/* 磨砂斜纹 + 斜向光泽 + 右下暗角，全部不拦截触摸 */
+.book-card::before {
+  height: 100%;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 42%),
+    repeating-linear-gradient(45deg,
+      rgba(255,255,255,0.055) 0rpx, rgba(255,255,255,0.055) 2rpx,
+      rgba(255,255,255,0) 2rpx, rgba(255,255,255,0) 7rpx),
+    linear-gradient(135deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0) 38%, rgba(20,28,48,0.10) 100%);
+  pointer-events: none;
+}
+/* 内容层抬到纹理之上，保证文字清晰 */
+.book-content { position: relative; z-index: 1; }
+.book-spine, .book-pages { z-index: 2; }
+
+/* 书脊：上下压线 + 圆柱高光，强化实体感 */
+.book-spine {
+  box-shadow:
+    3rpx 0 10rpx rgba(0, 0, 0, 0.18),
+    inset -2rpx 0 0 rgba(255, 255, 255, 0.28),
+    inset 0 10rpx 0 rgba(0, 0, 0, 0.10),
+    inset 0 -10rpx 0 rgba(0, 0, 0, 0.10);
+}
+.book-pages { box-shadow: -2rpx 0 8rpx rgba(0, 0, 0, 0.10); }
+
+/* 更厚的书页堆叠阴影 + 更深的落地投影 */
+.book-card {
+  box-shadow:
+    4rpx 6rpx 0 rgba(28, 36, 60, 0.10),
+    8rpx 12rpx 0 rgba(28, 36, 60, 0.07),
+    12rpx 18rpx 0 rgba(28, 36, 60, 0.04),
+    0 22rpx 44rpx rgba(31, 38, 63, 0.18),
+    inset 2rpx 0 0 rgba(255, 255, 255, 0.75),
+    inset 0 -8rpx 0 rgba(0, 0, 0, 0.05);
+}
+.book-item::after {
+  height: 16rpx;
+  margin: -10rpx 8rpx 0;
+  background: radial-gradient(ellipse at center, rgba(31, 38, 63, 0.22) 0, rgba(31, 38, 63, 0) 72%);
+}
+.shelf-grid::after {
+  height: 16rpx;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(176,184,204,0.45) 60%, rgba(150,160,186,0.20) 100%);
+  box-shadow: 0 10rpx 24rpx rgba(31, 38, 63, 0.12);
+}
+
+/* 工具栏与空状态点缀，避免大片单调 */
+.view-toggle { color: #4d5566; font-weight: 600; }
+.empty-icon { filter: drop-shadow(0 8rpx 16rpx rgba(102, 126, 234, 0.22)); }
+
+/* ============================================================
+   封面标识 v5：去掉「礼」字与 emoji 图标，改用书本主题色
+   ============================================================ */
+.book-icon, .book-seal { display: none; }
+.book-top { justify-content: flex-start; }
+
+.book-color-dot {
+  width: 30rpx; height: 30rpx; border-radius: 50%;
+  flex-shrink: 0;
+  border: 1rpx solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 3rpx 0 rgba(255, 255, 255, 0.55), 0 3rpx 8rpx rgba(0, 0, 0, 0.14);
+}
+.book-color-line {
+  flex: 1; height: 6rpx; margin-left: 12rpx;
+  border-radius: 3rpx; opacity: 0.85;
+}
+.book-color-0 .book-color-dot, .book-color-0 .book-color-line { background: #5a7ce6; }
+.book-color-1 .book-color-dot, .book-color-1 .book-color-line { background: #2fb488; }
+.book-color-2 .book-color-dot, .book-color-2 .book-color-line { background: #e0a832; }
+.book-color-3 .book-color-dot, .book-color-3 .book-color-line { background: #dd7098; }
+.book-color-4 .book-color-dot, .book-color-4 .book-color-line { background: #22b0c8; }
+.book-color-5 .book-color-dot, .book-color-5 .book-color-line { background: #9372dc; }
+
+/* 列表视图：色点替代 emoji，颜色由行内样式提供 */
+.list-color-dot {
+  width: 32rpx; height: 32rpx; border-radius: 50%;
+  flex-shrink: 0; margin-right: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 3rpx 0 rgba(255, 255, 255, 0.5), 0 3rpx 8rpx rgba(0, 0, 0, 0.10);
+}
+
+/* ============================================================
+   封面 v6：参考「嘉宾礼簿」红色封面 + 毛玻璃 + 自定义主色
+   主色由行内 background-color 提供
+   ============================================================ */
+.book-card {
+  background-image:
+    linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 38%, rgba(0,0,0,0.16) 100%),
+    repeating-linear-gradient(45deg,
+      rgba(255,255,255,0.045) 0rpx, rgba(255,255,255,0.045) 2rpx,
+      rgba(255,255,255,0) 2rpx, rgba(255,255,255,0) 7rpx);
+  -webkit-backdrop-filter: blur(20px) saturate(185%);
+  backdrop-filter: blur(20px) saturate(185%);
+  border: 1rpx solid rgba(255, 255, 255, 0.72);
+  box-shadow:
+    4rpx 6rpx 0 rgba(60, 12, 16, 0.16),
+    8rpx 12rpx 0 rgba(60, 12, 16, 0.10),
+    0 20rpx 40rpx rgba(60, 12, 16, 0.22),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.55),
+    inset 0 -8rpx 0 rgba(0, 0, 0, 0.10);
+}
+/* 只保留高光与暗角，磨砂纹放到 background-image，避免两层叠加 */
+.book-card::before {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 42%),
+    linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 40%, rgba(20,8,12,0.10) 100%);
+}
+/* 书脊：明暗圆柱高光叠加行内主色 */
+.book-spine {
+  background-image: linear-gradient(90deg,
+    rgba(0,0,0,0.34) 0%, rgba(255,255,255,0.34) 44%,
+    rgba(255,255,255,0.04) 66%, rgba(0,0,0,0.30) 100%);
+}
+.book-pages {
+  background: repeating-linear-gradient(180deg,
+    rgba(255,240,220,0.92) 0rpx, rgba(255,240,220,0.92) 3rpx,
+    rgba(190,160,140,0.55) 3rpx, rgba(190,160,140,0.55) 5rpx);
+}
+
+/* 参考图装饰：礼尚往来 / 双喜竖条 / 嘉宾礼簿（低透明度水印，不挡内容） */
+.book-cover-art {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0; pointer-events: none;
+  color: #ffe7bd; opacity: 0.32;
+}
+.cover-side {
+  position: absolute; left: 32rpx; top: 20rpx;
+  writing-mode: vertical-rl; font-size: 15rpx; letter-spacing: 4rpx;
+  padding: 8rpx 4rpx;
+  border: 1rpx solid currentColor; border-radius: 22rpx;
+}
+.cover-strip {
+  position: absolute; left: 50%; top: 16rpx; transform: translateX(-50%);
+  width: 76rpx; height: 164rpx; border-radius: 6rpx;
+  background: rgba(255, 232, 186, 0.55);
+  border: 2rpx solid rgba(255, 232, 186, 0.85);
+  display: flex; align-items: center; justify-content: center;
+}
+.cover-emblem {
+  width: 64rpx; height: 64rpx; border-radius: 50%;
+  border: 3rpx solid rgba(196, 44, 54, 0.9);
+  color: rgba(196, 44, 54, 0.95);
+  font-size: 38rpx; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.cover-guest {
+  position: absolute; right: 20rpx; bottom: 62rpx;
+  writing-mode: vertical-rl; font-size: 16rpx; letter-spacing: 2rpx;
+}
+
+/* 红底上的文字：米金色 + 深色描边，保证清晰可读 */
+.book-name {
+  color: #fff5df;
+  text-shadow: 0 1rpx 2rpx rgba(70, 8, 12, 0.6);
+}
+.meta-item, .book-date, .book-desc {
+  color: rgba(255, 240, 214, 0.95);
+  text-shadow: 0 1rpx 2rpx rgba(70, 8, 12, 0.5);
+}
+.meta-divider { color: rgba(255, 240, 214, 0.55); }
+.book-color-dot, .book-color-line { border-color: rgba(255, 255, 255, 0.75); }
+.book-color-line { opacity: 0.95; }
+.list-color-bar { width: 8rpx; }
+.list-color-dot { border-color: rgba(255, 255, 255, 0.8); }
+
+/* 选择颜色：沿用原「选择图标」的入口与点击选中方式 */
+.color-grid { display: flex; flex-wrap: wrap; gap: 18rpx; }
+.color-item {
+  width: 64rpx; height: 64rpx; border-radius: 50%;
+  border: 3rpx solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.12), inset 0 2rpx 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s;
+}
+.color-item.active {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 4rpx rgba(102, 126, 234, 0.5), 0 6rpx 14rpx rgba(0, 0, 0, 0.18);
+}
+
+/* ===== iOS 26 液态玻璃（Liquid Glass）===== */
+/* 书卡/列表项：保留既有 3D 阴影与纹理层，仅统一液态描边与模糊强度 */
+.book-card, .list-item, .add-card {
+  -webkit-backdrop-filter: blur(26px) saturate(195%);
+  backdrop-filter: blur(26px) saturate(195%);
+  border: 1.5rpx solid rgba(255, 255, 255, 0.62);
+}
+.list-item, .add-card {
+  box-shadow: inset 0 1rpx 1rpx rgba(255, 255, 255, 0.85), inset 1rpx 0 1rpx rgba(255, 255, 255, 0.35), inset -1rpx 0 1rpx rgba(255, 255, 255, 0.35), inset 0 -1rpx 1rpx rgba(255, 255, 255, 0.2), 0 14rpx 44rpx rgba(31, 38, 63, 0.13);
+}
+.list-item:active { transform: scale(0.985); transition: transform 0.28s var(--lg-ease); }
+/* 工具栏：液态玻璃胶囊 */
+.toolbar {
+  background: var(--lg-fill);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1.5rpx solid var(--lg-edge);
+  border-radius: 999rpx;
+  box-shadow: var(--lg-spec), 0 8rpx 28rpx rgba(31, 38, 63, 0.10);
+}
+.view-toggle {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 999rpx;
+  transition: transform 0.2s var(--lg-ease);
+}
+.view-toggle:active { transform: scale(0.94); }
+/* 空状态液态卡 */
+.empty-state {
+  background: var(--lg-fill);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1.5rpx solid var(--lg-edge);
+  border-radius: 44rpx;
+  box-shadow: var(--lg-spec), var(--lg-shadow);
+}
+/* 弹窗：液态玻璃 sheet */
+.modal-mask {
+  background: rgba(20, 22, 32, 0.34);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+}
+.modal-content {
+  background: var(--lg-fill-strong);
+  -webkit-backdrop-filter: var(--lg-blur-deep);
+  backdrop-filter: var(--lg-blur-deep);
+  border: 1.5rpx solid var(--lg-edge);
+  box-shadow: var(--lg-spec), 0 24rpx 70rpx rgba(31, 38, 63, 0.20);
+}

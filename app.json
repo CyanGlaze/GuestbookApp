@@ -1,20 +1,19 @@
 {
   "pages": [
-    "pages/login/login",
     "pages/bookshelf/bookshelf",
     "pages/detail/detail",
     "pages/mine/mine"
   ],
   "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#667eea",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#f2f2f7",
     "navigationBarTitleText": "礼金账本",
-    "navigationBarTextStyle": "white"
+    "navigationBarTextStyle": "black"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#667eea",
-    "backgroundColor": "#ffffff",
+    "color": "#8e8e93",
+    "selectedColor": "#5b6fd8",
+    "backgroundColor": "#f7f7fa",
     "borderStyle": "white",
     "list": [
       {
@@ -32,5 +31,7 @@
     ]
   },
   "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "__usePrivacyCheck__": true,
   "sitemapLocation": "sitemap.json"
 }

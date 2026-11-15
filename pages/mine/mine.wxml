@@ -1,8 +1,9 @@
 <view class="container">
-  <!-- 顶部背景（含自定义导航栏，渐变贯穿） -->
+  <!-- 彩色环境光 + 自定义导航栏 -->
   <view class="top-bg">
     <view class="circle circle-1"></view>
     <view class="circle circle-2"></view>
+    <view class="circle circle-3"></view>
     <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
       <view class="nav-inner" style="height: {{navBarHeight}}px;">
         <text class="nav-title">我的</text>
@@ -10,94 +11,95 @@
     </view>
   </view>
 
-  <!-- 用户卡片 -->
-  <view class="user-card">
-    <block wx:if="{{isLogin}}">
-      <view class="avatar-wrapper">
-        <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
-      </view>
-      <view class="user-info">
-        <text class="nickname">{{userInfo.nickName}}</text>
-        <view class="auth-tag">
-          <text class="auth-icon">✓</text>
-          <text>已授权登录</text>
+  <view class="content">
+    <!-- 用户卡片：未登录显示占位与登录按钮（页内选头像登录，无需跳转） -->
+    <view class="user-card">
+      <block wx:if="{{isLogin}}">
+        <view class="avatar-wrapper">
+          <image wx:if="{{userInfo.avatarType === 'image'}}" class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+          <view wx:else class="avatar avatar-emoji" style="background: {{userInfo.avatarBg}}">
+            <text class="avatar-emoji-text">{{userInfo.avatarEmoji}}</text>
+          </view>
         </view>
-      </view>
-    </block>
-    <block wx:else>
-      <view class="avatar-wrapper">
-        <view class="avatar-placeholder">👤</view>
-      </view>
-      <view class="user-info">
-        <text class="nickname">未登录</text>
-        <button class="login-btn" bindtap="onLogin">点击登录</button>
-      </view>
-    </block>
-  </view>
+        <view class="user-info">
+          <text class="nickname">{{userInfo.nickName}}</text>
+          <view class="auth-tag">
+            <text class="auth-icon">✓</text>
+            <text>已授权登录</text>
+          </view>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="avatar-wrapper">
+          <view class="avatar-placeholder">👤</view>
+        </view>
+        <view class="user-info">
+          <text class="nickname">未登录</text>
+          <button class="login-btn" bindtap="openAvatarPicker" disabled="{{logging}}" hover-class="btn-pressed">点击登录</button>
+        </view>
+      </block>
+    </view>
 
-  <!-- 功能区域 -->
-  <view class="action-area">
+    <!-- 未登录时不显示以下功能，登录后展示 -->
     <block wx:if="{{isLogin}}">
-      <!-- 导入导出按钮 - 居中显示 -->
+      <!-- 账本管理 -->
+      <view class="section-head"><text class="section-title">账本管理</text></view>
       <view class="quick-actions">
-        <view class="quick-action-item" bindtap="uploadExcel">
+        <view class="quick-action-item" hover-class="item-pressed" hover-stay-time="80" bindtap="uploadExcel">
           <view class="quick-action-icon">📊</view>
           <text class="quick-action-text">导入账本</text>
-          <text class="quick-action-desc">xlsx/xls</text>
+          <text class="quick-action-desc">xlsx / xls</text>
         </view>
-        <view class="quick-action-item" bindtap="exportBackup">
+        <view class="quick-action-item" hover-class="item-pressed" hover-stay-time="80" bindtap="exportBackup">
           <view class="quick-action-icon">📤</view>
           <text class="quick-action-text">导出备份</text>
           <text class="quick-action-desc">保存数据</text>
         </view>
-        <view class="quick-action-item" bindtap="importBackup">
+        <view class="quick-action-item" hover-class="item-pressed" hover-stay-time="80" bindtap="importBackup">
           <view class="quick-action-icon">📥</view>
           <text class="quick-action-text">导入备份</text>
           <text class="quick-action-desc">恢复数据</text>
         </view>
       </view>
 
-      <!-- 统计信息 -->
-      <view class="stats-section">
-        <view class="section-title">数据统计</view>
-        <view class="stats-grid">
-          <view class="stat-card">
-            <text class="stat-value">{{totalBooks}}</text>
-            <text class="stat-label">账本数量</text>
+      <!-- 数据总览 -->
+      <view class="section-head"><text class="section-title">数据总览</text></view>
+      <view class="overview-card">
+        <view class="overview-main">
+          <text class="overview-label">累计礼金</text>
+          <text class="overview-value">¥{{totalAmount}}</text>
+        </view>
+        <view class="overview-divider"></view>
+        <view class="overview-sub">
+          <view class="overview-sub-item">
+            <text class="sub-value">{{totalBooks}}</text>
+            <text class="sub-label">本账谱</text>
           </view>
-          <view class="stat-card">
-            <text class="stat-value">{{totalRecords}}</text>
-            <text class="stat-label">记录总数</text>
-          </view>
-          <view class="stat-card">
-            <text class="stat-value">¥{{totalAmount}}</text>
-            <text class="stat-label">礼金总额</text>
+          <view class="overview-sub-item">
+            <text class="sub-value">{{totalRecords}}</text>
+            <text class="sub-label">条记录</text>
           </view>
         </view>
       </view>
 
-      <!-- 其他操作 -->
-      <view class="menu-section">
-        <view class="section-title">更多操作</view>
-        <view class="menu-list">
-          <view class="menu-item" bindtap="clearAllData">
-            <view class="menu-icon">🗑️</view>
-            <text class="menu-text danger">清空所有数据</text>
-            <text class="menu-arrow">›</text>
-          </view>
+      <!-- 更多操作 -->
+      <view class="section-head"><text class="section-title">更多操作</text></view>
+      <view class="menu-list">
+        <view class="menu-item" hover-class="item-pressed" hover-stay-time="80" bindtap="clearAllData">
+          <view class="menu-icon">🗑️</view>
+          <text class="menu-text danger">清空所有数据</text>
+          <text class="menu-arrow">›</text>
         </view>
       </view>
 
-      <!-- 退出登录 -->
-      <view class="logout-section">
-        <button class="logout-btn" bindtap="onLogout">退出登录</button>
+      <view class="logout-section" wx:if="{{isLogin}}">
+        <button class="logout-btn" hover-class="btn-pressed" hover-stay-time="80" bindtap="onLogout">退出登录</button>
       </view>
-    </block>
 
-    <block wx:else>
-      <view class="login-tip-box">
-        <text class="tip-icon">🔒</text>
-        <text class="tip-text">请先登录以使用全部功能</text>
+      <view class="footer-note">
+        <text class="footer-line">数据仅保存在本机，清理微信缓存或卸载会丢失</text>
+        <text class="footer-line">建议定期使用「导出备份」保存账本</text>
+        <text class="footer-version">礼金账本 · 玻璃版 v2</text>
       </view>
     </block>
   </view>
@@ -107,7 +109,7 @@
     <view class="modal-content">
       <view class="modal-header">
         <text class="modal-title">账本入库确认</text>
-        <view class="modal-close" bindtap="closeModal">×</view>
+        <view class="modal-close" hover-class="btn-pressed" bindtap="closeModal">×</view>
       </view>
       <view class="modal-body">
         <view class="input-group">
@@ -126,8 +128,32 @@
         </view>
       </view>
       <view class="modal-footer">
-        <button class="btn-cancel" bindtap="closeModal">取消</button>
-        <button class="btn-confirm" bindtap="confirmSave">确认保存</button>
+        <button class="btn-cancel" hover-class="btn-pressed" bindtap="closeModal">取消</button>
+        <button class="btn-confirm" hover-class="btn-pressed" bindtap="confirmSave">确认保存</button>
+      </view>
+    </view>
+
+    <!-- 头像选择弹窗：优先「微信头像」，失败或不支持时可选预设头像，保证登录一定可用 -->
+    <view class="modal-mask" wx:if="{{showAvatarPicker}}" catchtouchmove="preventTouchMove">
+      <view class="modal-content avatar-picker-modal">
+        <view class="modal-header">
+          <text class="modal-title">选择登录头像</text>
+          <view class="modal-close" hover-class="btn-pressed" bindtap="closeAvatarPicker">×</view>
+        </view>
+        <view class="picker-body">
+          <button class="wx-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" binderror="onAvatarError" hover-class="btn-pressed">使用微信头像</button>
+          <text class="picker-or">—— 或选择预设头像 ——</text>
+          <view class="avatar-grid">
+            <view wx:for="{{presetAvatars}}" wx:key="emoji" class="avatar-option" hover-class="item-pressed" hover-stay-time="80" data-emoji="{{item.emoji}}" data-bg="{{item.bg}}" bindtap="pickPresetAvatar">
+              <view class="avatar-opt" style="background: {{item.bg}}">
+                <text class="avatar-opt-text">{{item.emoji}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="modal-footer">
+          <button class="btn-confirm full" hover-class="btn-pressed" bindtap="useDefaultAvatar">使用默认头像并登录</button>
+        </view>
       </view>
     </view>
   </view>

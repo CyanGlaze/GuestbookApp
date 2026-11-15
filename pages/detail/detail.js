@@ -2,13 +2,45 @@ const PinyinMatch = require('../../utils/pinyin-match.js');
 const { getNavBarInfo } = require('../../utils/util.js');
 
 // 常见姓氏多音字：拼音字典含多个读音，按姓氏读音优先（模块级常量，页面实例可访问）
+// 姓氏首字母映射（第一优先级）：多音字按姓氏读音 + 常用姓氏全覆盖，
+// 避免依赖拼音字典逐字匹配时被字典错漏（如"彭"被误归 B）带偏。
 const SURNAME_MAP = {
-  '单': 'S', '仇': 'Q', '沈': 'S', '曾': 'Z', '解': 'X', '查': 'Z', '乐': 'Y',
+  // 多音字姓氏（按姓氏读音）
+  '单': 'S', '仇': 'Q', '解': 'X', '查': 'Z', '乐': 'Y',
   '区': 'O', '朴': 'P', '尉': 'Y', '盖': 'G', '翟': 'Z', '牟': 'M', '员': 'Y',
   '覃': 'Q', '秘': 'B', '华': 'H', '燕': 'Y', '应': 'Y', '纪': 'J', '那': 'N',
-  '折': 'S', '繁': 'P', '句': 'G', '相': 'X', '盛': 'S', '宁': 'N', '冼': 'X',
-  '谌': 'C', '种': 'C', '藏': 'Z'
+  '折': 'S', '繁': 'P', '句': 'G', '相': 'X', '宁': 'N', '冼': 'X',
+  '谌': 'S', '种': 'C', '藏': 'Z', '阚': 'K', '都': 'D',
+  // 常用姓氏（人口前 150，字母序排列便于维护）
+  '安': 'A', '白': 'B', '包': 'B', '鲍': 'B', '毕': 'B', '边': 'B', '卞': 'B', '伯': 'B',
+  '蔡': 'C', '曹': 'C', '岑': 'C', '柴': 'C', '常': 'C', '晁': 'C', '陈': 'C', '成': 'C',
+  '程': 'C', '池': 'C', '褚': 'C', '崔': 'C', '戴': 'D', '邓': 'D', '丁': 'D', '董': 'D',
+  '杜': 'D', '段': 'D', '敦': 'D', '樊': 'F', '范': 'F', '方': 'F', '房': 'F', '费': 'F',
+  '冯': 'F', '符': 'F', '傅': 'F', '甘': 'G', '高': 'G', '葛': 'G', '龚': 'G', '巩': 'G',
+  '古': 'G', '顾': 'G', '关': 'G', '管': 'G', '桂': 'G', '郭': 'G', '韩': 'H', '杭': 'H',
+  '郝': 'H', '何': 'H', '贺': 'H', '洪': 'H', '侯': 'H', '胡': 'H', '花': 'H', '黄': 'H',
+  '霍': 'H', '姬': 'J', '吉': 'J', '纪': 'J', '季': 'J', '贾': 'J', '简': 'J', '江': 'J',
+  '姜': 'J', '蒋': 'J', '金': 'J', '荆': 'J', '景': 'J', '康': 'C', '柯': 'K', '孔': 'K',
+  '寇': 'K', '匡': 'K', '赖': 'L', '蓝': 'L', '郎': 'L', '雷': 'L', '黎': 'L', '李': 'L',
+  '连': 'L', '廉': 'L', '梁': 'L', '廖': 'L', '林': 'L', '凌': 'L', '刘': 'L', '柳': 'L',
+  '龙': 'L', '楼': 'L', '卢': 'L', '鲁': 'L', '陆': 'L', '路': 'L', '吕': 'L', '罗': 'R',
+  '骆': 'L', '马': 'M', '麦': 'M', '梅': 'M', '孟': 'M', '闵': 'M', '莫': 'M', '牟': 'M',
+  '穆': 'M', '倪': 'N', '聂': 'N', '欧': 'O', '欧阳': 'O', '潘': 'P', '庞': 'P', '彭': 'P',
+  '皮': 'P', '蒲': 'P', '浦': 'P', '戚': 'Q', '祁': 'Q', '齐': 'Q', '钱': 'Q', '秦': 'Q',
+  '邱': 'Q', '裘': 'Q', '屈': 'Q', '全': 'Q', '任': 'R', '阮': 'R', '芮': 'R', '商': 'S',
+  '尚': 'S', '邵': 'S', '佘': 'S', '沈': 'S', '施': 'S', '石': 'S', '时': 'S', '史': 'S',
+  '司徒': 'S', '苏': 'S', '孙': 'S', '隋': 'S', '汤': 'T', '唐': 'T', '陶': 'T', '田': 'T',
+  '童': 'T', '涂': 'T', '万': 'W', '汪': 'W', '王': 'W', '韦': 'W', '卫': 'W', '魏': 'W',
+  '温': 'W', '文': 'W', '翁': 'W', '吴': 'W', '伍': 'W', '武': 'W', '奚': 'X', '夏': 'X',
+  '项': 'X', '萧': 'X', '肖': 'X', '谢': 'X', '邢': 'X', '徐': 'X', '许': 'X', '薛': 'X',
+  '严': 'Y', '颜': 'Y', '杨': 'Y', '姚': 'Y', '叶': 'Y', '易': 'Y', '殷': 'Y', '尹': 'Y',
+  '雍': 'Y', '尤': 'Y', '于': 'Y', '余': 'Y', '俞': 'Y', '虞': 'Y', '元': 'Y', '袁': 'Y',
+  '岳': 'Y', '云': 'Y', '曾': 'Z', '詹': 'Z', '张': 'Z', '赵': 'Z', '郑': 'Z', '钟': 'Z',
+  '仲': 'Z', '周': 'Z', '朱': 'Z', '祝': 'Z', '庄': 'Z', '卓': 'Z', '邹': 'Z', '祖': 'Z'
 };
+
+// 高亮切片带稳定 id，供 WXML 的 wx:key 使用
+const withSegmentId = (segs) => segs.map((s, i) => ({ id: i, text: s.text, hit: s.hit }));
 
 Page({
   data: {
@@ -51,25 +83,29 @@ Page({
 
   loadBookData(id) {
     const shelf = wx.getStorageSync('bookShelf') || [];
-    const book = shelf.find(b => b.id === id);
+    const book = shelf.find(b => String(b.id) === String(id));
     if (book) {
-      const total = book.records.reduce((s, r) => s + (Number(r['礼金']) || 0), 0);
+      const records = book.records || [];
+      const total = records.reduce((s, r) => s + (Number(r['礼金']) || 0), 0);
       this.setData({
         bookTitle: book.title,
         bookIcon: book.icon || '📋',
-        rawRecords: book.records,
-        totalCount: book.records.length,
+        rawRecords: records,
+        totalCount: records.length,
         totalAmount: total.toFixed(2)
       });
       this.filterData(this.data.searchKey);
     }
   },
 
-  // 返回上一页（自定义导航栏）
+  // 返回上一页（自定义导航栏）；失败兜底回书架，不影响其他导航
   goBack() {
     const pages = getCurrentPages();
     if (pages.length > 1) {
-      wx.navigateBack();
+      wx.navigateBack({
+        delta: 1,
+        fail: () => wx.switchTab({ url: '/pages/bookshelf/bookshelf' })
+      });
     } else {
       wx.switchTab({ url: '/pages/bookshelf/bookshelf' });
     }
@@ -87,7 +123,7 @@ Page({
 
   getHighlight(text, key) {
     const fullText = String(text || '');
-    if (!key) return [{ text: fullText, hit: false }];
+    if (!key) return withSegmentId([{ text: fullText, hit: false }]);
     const k = key.toLowerCase().trim();
     const matchRes = PinyinMatch ? PinyinMatch.match(fullText, k) : false;
     if (matchRes) {
@@ -96,7 +132,7 @@ Page({
       if (start > 0) res.push({ text: fullText.substring(0, start), hit: false });
       res.push({ text: fullText.substring(start, end + 1), hit: true });
       if (end < fullText.length - 1) res.push({ text: fullText.substring(end + 1), hit: false });
-      return res;
+      return withSegmentId(res);
     }
     const parts = k.split(/([^\u4e00-\u9fa5]+)/).filter(Boolean);
     let segments = [{ text: fullText, hit: false }];
@@ -123,7 +159,7 @@ Page({
       });
       segments = newSegments;
     });
-    return segments;
+    return withSegmentId(segments);
   },
 
   smartMatch(target, key) {
@@ -155,11 +191,12 @@ Page({
       this.smartMatch(item['姓名'], key) || this.smartMatch(item['地址'], key)
     );
     const levelTags = { 2: '🎉', 3: '⭐', 4: '🔥', 5: '🧧' };
-    const processed = filtered.map(item => {
+    const processed = filtered.map((item, idx) => {
       const level = this.getAmountLevel(item['礼金']);
       const letter = this.getFirstLetter(item['姓名']);
       return {
         ...item,
+        _key: 'r' + idx,
         nameSeg: this.getHighlight(item['姓名'], key),
         addrSeg: this.getHighlight(item['地址'], key),
         amountLevel: level,
@@ -198,7 +235,6 @@ Page({
       return SURNAME_MAP[firstChar];
     }
     // 用拼音字典逐字母匹配（A-Z），跨端结果一致
-    // 不再依赖 localeCompare：真机部分内核按 Unicode 码点排序，会把"陈"等字错分到 Z 组
     for (let i = 0; i < 26; i++) {
       const letter = String.fromCharCode(65 + i);
       if (PinyinMatch && PinyinMatch.match(firstChar, letter)) {
@@ -232,7 +268,7 @@ Page({
             currentLetter: letter,
             scrollTarget: 'letter-' + (letter === '#' ? 'special' : letter)
           });
-          wx.vibrateShort({ type: 'light' });
+          try { wx.vibrateShort({ type: 'light', fail: () => {} }); } catch (e) {}
         }
       }
     }).exec();
@@ -293,12 +329,14 @@ Page({
 
   copyRecord(item) {
     let shelf = wx.getStorageSync('bookShelf') || [];
-    let bIdx = shelf.findIndex(b => b.id === this.data.currentBookId);
+    let bIdx = shelf.findIndex(b => String(b.id) === String(this.data.currentBookId));
     if (bIdx === -1) return;
+    const records = shelf[bIdx].records || [];
     const newRecord = this.pickRecordFields(item);
-    shelf[bIdx].records.unshift(newRecord);
-    shelf[bIdx].count = shelf[bIdx].records.length;
-    shelf[bIdx].total = shelf[bIdx].records.reduce((s, r) => s + (Number(r['礼金']) || 0), 0);
+    records.unshift(newRecord);
+    shelf[bIdx].records = records;
+    shelf[bIdx].count = records.length;
+    shelf[bIdx].total = records.reduce((s, r) => s + (Number(r['礼金']) || 0), 0);
     wx.setStorageSync('bookShelf', shelf);
     this.loadBookData(this.data.currentBookId);
     wx.showToast({ title: '已复制', icon: 'success' });
@@ -315,9 +353,9 @@ Page({
       return;
     }
     let shelf = wx.getStorageSync('bookShelf') || [];
-    let bIdx = shelf.findIndex(b => b.id === currentBookId);
+    let bIdx = shelf.findIndex(b => String(b.id) === String(currentBookId));
     if (bIdx === -1) return;
-    let records = shelf[bIdx].records;
+    let records = shelf[bIdx].records || [];
     if (isAdding) {
       records.unshift(this.pickRecordFields(editingItem));
     } else {
@@ -347,9 +385,9 @@ Page({
       success: (res) => {
         if (res.confirm) {
           let shelf = wx.getStorageSync('bookShelf') || [];
-          let bIdx = shelf.findIndex(b => b.id === this.data.currentBookId);
+          let bIdx = shelf.findIndex(b => String(b.id) === String(this.data.currentBookId));
           if (bIdx > -1) {
-            let rs = shelf[bIdx].records;
+            let rs = shelf[bIdx].records || [];
             const rIdx = rs.findIndex(d =>
               d['姓名'] === item['姓名'] && d['礼金'] === item['礼金']
             );

@@ -1,17 +1,30 @@
 const XLSX = require('../../utils/xlsx.mini.js');
 const { getNavBarInfo } = require('../../utils/util.js');
+const { withPrivacyAuth } = require('../../utils/privacy.js');
+
+// 书本主体色板：默认参考图为喜庆红，其余供用户选择
+const DEFAULT_COLORS = ['#c8323c', '#b8863b', '#2d5a43', '#3a5a9c', '#7a4b8c', '#b5546f'];
+
+function toRgba(hex, alpha) {
+  const h = String(hex || DEFAULT_COLORS[0]).replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16) || 0;
+  const g = parseInt(h.substring(2, 4), 16) || 0;
+  const b = parseInt(h.substring(4, 6), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 Page({
   data: {
     books: [],
     userInfo: null,
+    isLogin: false,
     isRefreshing: false,
     showEditModal: false,
     editBookId: '',
     editTitle: '',
     editDesc: '',
-    editIcon: '📋',
-    iconList: ['📋', '📕', '📗', '📘', '📙', '📓', '📔', '📒', '📝', '💰', '🎁', '🎊'],
+    colorOptions: DEFAULT_COLORS,
+    editColor: DEFAULT_COLORS[0],
     viewMode: 'grid',
     isEmptyAfterDelete: false,
     showRenameModal: false,
@@ -23,7 +36,7 @@ Page({
   },
 
   onLoad() {
-    this.checkLogin();
+    // 导入/添加账本需先登录（在 mine 页完成），仅查看书架不强制；避免与隐私授权形成死循环
     const nav = getNavBarInfo();
     this.setData({ statusBarHeight: nav.statusBarHeight, navBarHeight: nav.navBarHeight });
   },
@@ -33,26 +46,56 @@ Page({
     this.loadUserInfo();
     const viewMode = wx.getStorageSync('shelfViewMode') || 'grid';
     this.setData({ viewMode });
+    this.autoOpenIfSingle();
   },
 
-  checkLogin() {
-    const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo) {
-      wx.reLaunch({ url: '/pages/login/login' });
-      return false;
-    }
-    return true;
+  onHide() {
+    // 只有「自己进入详情页」才标记，避免返回书架后被再次自动带走
+    if (this._enteringDetail) this._skipNextShow = true;
+    this._enteringDetail = false;
+  },
+
+  // 统一进入详情页的入口
+  openDetail(id) {
+    if (id === undefined || id === null || id === '') return;
+    this._enteringDetail = true;
+    wx.navigateTo({ url: '/pages/detail/detail?id=' + id });
+  },
+
+  // 书架仅一本时直接打开该书；多本或空书架保持原展示流程
+  autoOpenIfSingle() {
+    if (this._skipNextShow) { this._skipNextShow = false; return; }
+    let shelf;
+    try { shelf = wx.getStorageSync('bookShelf') || []; } catch (e) { return; }
+    if (!Array.isArray(shelf) || shelf.length !== 1) return;
+    const pages = getCurrentPages();
+    if (!pages.length || pages[pages.length - 1].route !== 'pages/bookshelf/bookshelf') return;
+    const id = String(shelf[0].id);
+    const go = () => this.openDetail(id);
+    if (typeof wx.nextTick === 'function') wx.nextTick(go);
+    else go();
   },
 
   loadUserInfo() {
     const userInfo = wx.getStorageSync('userInfo');
-    this.setData({ userInfo });
+    this.setData({ userInfo, isLogin: !!userInfo });
+  },
+
+  // 给每本书补渲染用颜色：优先自定义 color，否则按序号取默认色板
+  decorate(shelf) {
+    return (shelf || []).map((b, i) => {
+      const solid = b.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+      return Object.assign({}, b, {
+        displaySolid: solid,
+        displayColor: toRgba(solid, 0.90)
+      });
+    });
   },
 
   loadBooks() {
     try {
       const shelf = wx.getStorageSync('bookShelf') || [];
-      this.setData({ books: shelf, isEmptyAfterDelete: false });
+      this.setData({ books: this.decorate(shelf), isEmptyAfterDelete: false });
     } catch (e) {
       console.error('读取书架数据失败', e);
       this.setData({ books: [], isEmptyAfterDelete: false });
@@ -74,12 +117,15 @@ Page({
   },
 
   openBook(e) {
-    const { id } = e.currentTarget.dataset;
-    wx.navigateTo({ url: `/pages/detail/detail?id=${id}` });
+    this.openDetail(e.currentTarget.dataset.id);
   },
 
   onLongPressBook(e) {
-    wx.vibrateShort({ type: 'medium' }).catch(() => {});
+    // 兼容旧基础库：vibrateShort 不一定返回 Promise
+    try {
+      const p = wx.vibrateShort({ type: 'medium', fail: () => {} });
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch (e) {}
     const { id, title } = e.currentTarget.dataset;
     const book = this.data.books.find(b => String(b.id) === String(id));
     wx.showActionSheet({
@@ -92,7 +138,7 @@ Page({
               editBookId: String(id),
               editTitle: title,
               editDesc: book?.desc || '',
-              editIcon: book?.icon || '📋'
+              editColor: book?.color || DEFAULT_COLORS[0]
             });
             break;
           case 1:
@@ -136,7 +182,7 @@ Page({
           shelf = shelf.filter(b => String(b.id) !== String(id));
           wx.setStorageSync('bookShelf', shelf);
           const isEmpty = shelf.length === 0;
-          this.setData({ books: shelf, isEmptyAfterDelete: isEmpty });
+          this.setData({ books: this.decorate(shelf), isEmptyAfterDelete: isEmpty });
           if (isEmpty) {
             wx.showToast({ title: '已删除全部账本', icon: 'none' });
           } else {
@@ -155,9 +201,9 @@ Page({
     this.setData({ editDesc: e.detail.value });
   },
 
-  selectIcon(e) {
-    const { icon } = e.currentTarget.dataset;
-    this.setData({ editIcon: icon });
+  // 选择书本颜色：沿用原「选择图标」的点击选中方式
+  selectColor(e) {
+    this.setData({ editColor: e.currentTarget.dataset.color });
   },
 
   closeEditModal() {
@@ -165,7 +211,7 @@ Page({
   },
 
   confirmEdit() {
-    const { editBookId, editTitle, editDesc, editIcon } = this.data;
+    const { editBookId, editTitle, editDesc, editColor } = this.data;
     if (!editTitle.trim()) {
       wx.showToast({ title: '请输入账本名称', icon: 'none' });
       return;
@@ -177,8 +223,8 @@ Page({
       
       if (bookIndex !== -1) {
         shelf[bookIndex].title = editTitle.trim();
-        shelf[bookIndex].icon = editIcon;
         shelf[bookIndex].desc = (editDesc || '').trim();
+        shelf[bookIndex].color = editColor;
         wx.setStorageSync('bookShelf', shelf);
         this.loadBooks();
         this.closeEditModal();
@@ -202,20 +248,28 @@ Page({
 
   // ========== 导入账本（书架页直接导入，无需跳转 mine 页） ==========
 
-  // 选择Excel文件
+  // 选择Excel文件（先经隐私授权）
   uploadExcel() {
-    wx.chooseMessageFile({
-      count: 1,
-      type: 'file',
-      extension: ['.xlsx', '.xls'],
-      success: (res) => {
-        const file = res.tempFiles[0];
-        const defaultName = file.name.replace(/\.[^/.]+$/, "");
-        this.parseFile(file.path, defaultName);
-      },
-      fail: () => {
-        wx.showToast({ title: '选择文件失败', icon: 'none' });
-      }
+    // 导入需先登录：未登录时引导去「我的」页完成登录，避免登录形同虚设
+    if (!this.data.isLogin) {
+      wx.showToast({ title: '请先在「我的」登录', icon: 'none' });
+      setTimeout(() => wx.switchTab({ url: '/pages/mine/mine' }), 900);
+      return;
+    }
+    withPrivacyAuth(() => {
+      wx.chooseMessageFile({
+        count: 1,
+        type: 'file',
+        extension: ['.xlsx', '.xls'],
+        success: (res) => {
+          const file = res.tempFiles[0];
+          const defaultName = file.name.replace(/\.[^/.]+$/, "");
+          this.parseFile(file.path, defaultName);
+        },
+        fail: () => {
+          wx.showToast({ title: '选择文件失败', icon: 'none' });
+        }
+      });
     });
   },
 
@@ -263,7 +317,7 @@ Page({
     const newBook = {
       id: Date.now().toString(),
       title: this.data.tempName.trim(),
-      icon: '📋',
+      color: DEFAULT_COLORS[0],
       records: this.data.tempData,
       count: this.data.tempData.length,
       total: parseFloat(this.data.tempTotal),

@@ -12,9 +12,9 @@
   </view>
 
   <view class="content">
-    <!-- 用户卡片：未登录显示占位与登录按钮（页内选头像登录，无需跳转） -->
-    <view class="user-card">
-      <block wx:if="{{isLogin}}">
+    <!-- 已登录：用户卡片；未登录：登录界面（二者平级切换） -->
+    <block wx:if="{{isLogin}}">
+      <view class="user-card">
         <view class="avatar-wrapper">
           <image wx:if="{{userInfo.avatarType === 'image'}}" class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
           <view wx:else class="avatar avatar-emoji" style="background: {{userInfo.avatarBg}}">
@@ -28,17 +28,64 @@
             <text>已授权登录</text>
           </view>
         </view>
-      </block>
-      <block wx:else>
-        <view class="avatar-wrapper">
-          <view class="avatar-placeholder">👤</view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="login-screen">
+        <!-- Logo 卡片：红绿蓝彩色簿册 -->
+        <view class="login-logo-card">
+          <view class="book-stack">
+            <view class="book-spine book-red"></view>
+            <view class="book-spine book-green"></view>
+            <view class="book-spine book-blue"></view>
+          </view>
         </view>
-        <view class="user-info">
-          <text class="nickname">未登录</text>
-          <button class="login-btn" bindtap="openAvatarPicker" disabled="{{logging}}" hover-class="btn-pressed">点击登录</button>
+        <text class="login-title">礼金账本</text>
+        <text class="login-subtitle">记录每一份情谊</text>
+
+        <!-- 登录卡片 -->
+        <view class="login-card">
+          <text class="login-card-title">微信登录</text>
+          <text class="login-card-desc">获取微信头像与昵称，安全便捷</text>
+
+          <button class="wechat-login-btn" open-type="chooseAvatar"
+                  bindchooseavatar="onChooseAvatar" binderror="onAvatarError"
+                  hover-class="btn-pressed" hover-stay-time="80">
+            <image class="wechat-icon-img" src="/images/wechat.png" mode="aspectFit"></image>
+            <text class="wechat-login-text">微信一键登录</text>
+          </button>
+
+          <view class="login-divider">
+            <view class="divider-line"></view>
+            <text class="divider-text">功能亮点</text>
+            <view class="divider-line"></view>
+          </view>
+
+          <view class="feature-row">
+            <view class="feature-item">
+              <view class="feature-icon">📊</view>
+              <text class="feature-label">导入Excel</text>
+            </view>
+            <view class="feature-item">
+              <view class="feature-icon">🔍</view>
+              <text class="feature-label">智能搜索</text>
+            </view>
+            <view class="feature-item">
+              <view class="feature-icon">✏️</view>
+              <text class="feature-label">便捷编辑</text>
+            </view>
+          </view>
         </view>
-      </block>
-    </view>
+
+        <!-- 协议 -->
+        <view class="agreement">
+          <text>登录即表示同意</text>
+          <text class="agree-link" bindtap="showAgreement" data-type="user">《用户协议》</text>
+          <text>和</text>
+          <text class="agree-link" bindtap="showAgreement" data-type="privacy">《隐私政策》</text>
+        </view>
+      </view>
+    </block>
 
     <!-- 未登录时不显示以下功能，登录后展示 -->
     <block wx:if="{{isLogin}}">
@@ -130,30 +177,6 @@
       <view class="modal-footer">
         <button class="btn-cancel" hover-class="btn-pressed" bindtap="closeModal">取消</button>
         <button class="btn-confirm" hover-class="btn-pressed" bindtap="confirmSave">确认保存</button>
-      </view>
-    </view>
-
-    <!-- 头像选择弹窗：优先「微信头像」，失败或不支持时可选预设头像，保证登录一定可用 -->
-    <view class="modal-mask" wx:if="{{showAvatarPicker}}" catchtouchmove="preventTouchMove">
-      <view class="modal-content avatar-picker-modal">
-        <view class="modal-header">
-          <text class="modal-title">选择登录头像</text>
-          <view class="modal-close" hover-class="btn-pressed" bindtap="closeAvatarPicker">×</view>
-        </view>
-        <view class="picker-body">
-          <button class="wx-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" binderror="onAvatarError" hover-class="btn-pressed">使用微信头像</button>
-          <text class="picker-or">—— 或选择预设头像 ——</text>
-          <view class="avatar-grid">
-            <view wx:for="{{presetAvatars}}" wx:key="emoji" class="avatar-option" hover-class="item-pressed" hover-stay-time="80" data-emoji="{{item.emoji}}" data-bg="{{item.bg}}" bindtap="pickPresetAvatar">
-              <view class="avatar-opt" style="background: {{item.bg}}">
-                <text class="avatar-opt-text">{{item.emoji}}</text>
-              </view>
-            </view>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <button class="btn-confirm full" hover-class="btn-pressed" bindtap="useDefaultAvatar">使用默认头像并登录</button>
-        </view>
       </view>
     </view>
   </view>

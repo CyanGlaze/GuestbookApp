@@ -13,7 +13,6 @@ Page({
   data: {
     isLogin: false,
     userInfo: null,
-    tempAvatar: '',
     logging: false,
     showRenameModal: false,
     tempName: '',
@@ -23,19 +22,7 @@ Page({
     totalRecords: 0,
     totalAmount: '0.00',
     statusBarHeight: 20,
-    navBarHeight: 44,
-    // chooseAvatar 不可用时的兜底头像（表情 + 渐变底，本机直接渲染，不依赖隐私接口）
-    presetAvatars: [
-      { emoji: '😊', bg: 'linear-gradient(135deg,#5b9bff,#7c5bff)' },
-      { emoji: '🌸', bg: 'linear-gradient(135deg,#ff8fb1,#ff5b8a)' },
-      { emoji: '🍀', bg: 'linear-gradient(135deg,#43d17a,#1fae6b)' },
-      { emoji: '⭐', bg: 'linear-gradient(135deg,#ffcf5b,#ff9f1c)' },
-      { emoji: '🔥', bg: 'linear-gradient(135deg,#ff9a5b,#ff5b5b)' },
-      { emoji: '💎', bg: 'linear-gradient(135deg,#9b7bff,#5b6fd8)' },
-      { emoji: '🐱', bg: 'linear-gradient(135deg,#4fd1c5,#2bb6a8)' },
-      { emoji: '🌟', bg: 'linear-gradient(135deg,#6f8bff,#4f5bd8)' }
-    ],
-    showAvatarPicker: false
+    navBarHeight: 44
   },
 
   onLoad() {
@@ -86,49 +73,99 @@ Page({
     });
   },
 
-  // ===== 页内登录（替代独立登录页）=====
+  // ===== 页内登录（微信一键登录：并发获取头像 + 昵称，无昵称输入框）=====
 
-  // 弹窗内「使用微信头像」→ 系统选头像 → 选完自动完成登录
+  // 点击「微信一键登录」(open-type=chooseAvatar) → 系统选真实微信头像
   onChooseAvatar(e) {
     const { avatarUrl } = e.detail;
-    // 极少数机型 bindchooseavatar 返回的 detail 为空，提示改用预设头像
     if (!avatarUrl) {
-      wx.showToast({ title: '未获取到头像，请选预设头像', icon: 'none' });
+      // 极少数机型返回空，走兜底登录，不卡死
+      this.fallbackLogin();
       return;
     }
-    this.setData({ showAvatarPicker: false });
-    this.finishLogin({ avatarType: 'image', avatarUrl });
+    // 并发执行两个独立任务（头像持久化 + 昵称获取），Promise.all 同时等待，非串行
+    Promise.all([
+      this.saveAvatar(avatarUrl),   // 任务1：持久化微信头像，返回稳定地址
+      this.fetchNickname()          // 任务2：获取昵称（默认 / 可接后端）
+    ]).then(([savedAvatar, nickName]) => {
+      const finalAvatar = savedAvatar || avatarUrl; // 持久化失败则用临时路径兜底
+      this.finishLogin({
+        avatarType: 'image',
+        avatarUrl: finalAvatar,
+        nickName: nickName || '微信用户'
+      });
+    }).catch((err) => {
+      console.error('登录信息获取失败:', err);
+      wx.showToast({ title: '登录信息获取失败，已用默认资料', icon: 'none' });
+      this.fallbackLogin(); // 任一任务异常也不卡死，用默认资料兜底
+    });
+  },
+
+  // 任务1：把 chooseAvatar 的临时头像持久化到本地，返回稳定地址（Promise）
+  saveAvatar(tempFilePath) {
+    return new Promise((resolve) => {
+      const fs = wx.getFileSystemManager();
+      fs.saveFile({
+        tempFilePath,
+        success: (res) => resolve(res.savedFilePath),
+        fail: () => resolve('') // 失败时返回空，由上层用临时路径兜底
+      });
+    });
+  },
+
+  // 任务2：获取昵称（Promise，便于与 saveAvatar 并发）。
+  // 说明：微信现行隐私模型已无「程序化获取真实昵称」的接口（getUserProfile 已下线），
+  // 故默认返回「微信用户」。若你提供后端昵称接口，把下方 resolve 改成 wx.request 即可，
+  // 与 saveAvatar 经 Promise.all 并发，登录主流程无需改动。
+  fetchNickname() {
+    return new Promise((resolve) => {
+      // 接后端示例（取消注释并替换 URL 即可）：
+      // wx.request({ url: 'https://your-api/nickname',
+      //   success: (r) => resolve((r.data && r.data.nickName) || '微信用户'),
+      //   fail: () => resolve('微信用户') });
+      resolve('微信用户');
+    });
   },
 
   // 微信头像获取失败：多为后台《用户隐私保护指引》未声明「头像」或未生效。
-  // 此时头像弹窗已打开，仅提示用户改用预设头像即可，不卡死登录。
+  // 此处不阻塞登录，自动用默认头像完成登录，并提示去后台声明。
   onAvatarError(e) {
     console.error('chooseAvatar 失败:', e && e.detail);
-    wx.showToast({ title: '微信头像暂不可用，请选预设头像', icon: 'none' });
+    wx.showToast({ title: '微信头像暂不可用，已用默认头像', icon: 'none' });
+    this.fallbackLogin();
   },
 
-  // 打开备选头像选择（chooseAvatar 不可用时的兜底）
-  openAvatarPicker() {
-    if (this.data.logging) return;
-    this.setData({ showAvatarPicker: true });
-  },
-  closeAvatarPicker() {
-    this.setData({ showAvatarPicker: false });
-  },
-  // 从备选头像里选一个
-  pickPresetAvatar(e) {
-    const { emoji, bg } = e.currentTarget.dataset;
-    this.setData({ showAvatarPicker: false });
-    this.finishLogin({ avatarType: 'emoji', avatarEmoji: emoji, avatarBg: bg });
-  },
-  // 直接用默认头像登录
-  useDefaultAvatar() {
-    const def = this.data.presetAvatars[0];
-    this.setData({ showAvatarPicker: false });
-    this.finishLogin({ avatarType: 'emoji', avatarEmoji: def.emoji, avatarBg: def.bg });
+  // 头像获取失败 / 信息获取异常时的兜底：用默认头像 + 默认昵称完成登录，保证登录一定可用
+  fallbackLogin() {
+    this.finishLogin({
+      avatarType: 'emoji',
+      avatarEmoji: '🎉',
+      avatarBg: 'linear-gradient(135deg,#5b9bff,#7c5bff)',
+      nickName: '微信用户'
+    });
   },
 
-  // 完成登录：avatar 为 {avatarType:'image'|'emoji', ...}
+  // 协议说明：纯本地应用，数据不上传，仅说明用途
+  showAgreement(e) {
+    const type = e.currentTarget.dataset.type;
+    if (type === 'privacy') {
+      wx.showModal({
+        title: '隐私政策',
+        content: '本应用为纯本地记账工具：所有礼金数据仅保存在你的本机，不会上传任何服务器；仅在你主动选择文件时，在本机读取并解析 Excel / 备份内容用于生成或恢复礼金记录，不收集、不上传任何个人信息。',
+        showCancel: false,
+        confirmText: '知道了'
+      });
+    } else {
+      wx.showModal({
+        title: '用户协议',
+        content: '你确认：本应用仅提供礼金账本的本地记录与管理，数据由你自行保管；清理微信缓存或卸载应用会导致数据丢失，建议定期使用「导出备份」保存。',
+        showCancel: false,
+        confirmText: '知道了'
+      });
+    }
+  },
+
+  // 完成登录：avatar 为 {avatarType:'image'|'emoji', nickName, ...}
   finishLogin(avatar) {
     if (this.data.logging) return;
     this.setData({ logging: true });
@@ -360,7 +397,7 @@ Page({
         if (res.confirm) {
           wx.removeStorageSync('userInfo');
           // 回到未登录态：「我的」页重新显示居中登录卡
-          this.setData({ isLogin: false, userInfo: null, tempAvatar: '' });
+          this.setData({ isLogin: false, userInfo: null });
         }
       }
     });

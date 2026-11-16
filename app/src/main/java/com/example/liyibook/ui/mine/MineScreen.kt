@@ -1,5 +1,10 @@
 package com.example.liyibook.ui.mine
 
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,12 +24,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +56,8 @@ import com.example.liyibook.ui.SectionTitle
 import com.example.liyibook.ui.theme.BrandBlue
 import com.example.liyibook.ui.theme.BrandRed
 import com.example.liyibook.util.FormatUtil
+import com.example.liyibook.util.UpdateUtil
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -57,6 +67,7 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
     val user by vm.user.collectAsState()
     val books by vm.books.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var showAgreement by remember { mutableStateOf<String?>(null) }
     var confirmClear by remember { mutableStateOf<Boolean?>(false) }
@@ -65,6 +76,58 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
     var pendingSource by remember { mutableStateOf("") }
     var importName by remember { mutableStateOf("") }
     var overwriteConfirm by remember { mutableStateOf(false) }
+
+    // ===== 更新相关状态 =====
+    var checking by remember { mutableStateOf(false) }
+    var checkResult by remember { mutableStateOf<UpdateUtil.CheckResult?>(null) }
+    var confirmDownload by remember { mutableStateOf<UpdateUtil.ReleaseInfo?>(null) }
+    var updateInfoDialog by remember { mutableStateOf<String?>(null) }
+    var pendingDownloadId by remember { mutableStateOf<Long?>(null) }
+    var pendingApkName by remember { mutableStateOf("") }
+
+    // 下载完成监听：安装 APK
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
+                val waiting = pendingDownloadId
+                if (waiting != null && id == waiting && pendingApkName.isNotBlank()) {
+                    pendingDownloadId = null
+                    UpdateUtil.install(ctx.applicationContext, pendingApkName)
+                }
+            }
+        }
+        context.registerReceiver(
+            receiver,
+            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        )
+        onDispose { context.unregisterReceiver(receiver) }
+    }
+
+    fun startCheckUpdate() {
+        if (checking) return
+        checking = true
+        checkResult = null
+        scope.launch {
+            val result = UpdateUtil.checkLatest()
+            checking = false
+            checkResult = result
+            if (result is UpdateUtil.CheckResult.Found && result.newer) {
+                confirmDownload = result.info
+            }
+        }
+    }
+
+    fun startDownload(info: UpdateUtil.ReleaseInfo) {
+        if (!UpdateUtil.canInstallUnknownApps(context)) {
+            updateInfoDialog = "需要先允许「安装未知应用」权限，接下来会打开系统设置，请为本应用开启后返回重试下载。"
+            UpdateUtil.openInstallPermissionSettings(context)
+            return
+        }
+        pendingApkName = info.apkName
+        pendingDownloadId = UpdateUtil.download(context, info)
+        vm.toast("已开始下载，请在通知栏查看进度")
+    }
 
     val totalBooks = books.size
     val totalRecords = books.sumOf { it.count }
@@ -157,6 +220,24 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
                 SectionTitle("更多操作")
                 PanelCard {
                     Row(
+                        Modifier.fillMaxWidth().clickable { startCheckUpdate() }
+                            .padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("⬆️", fontSize = 18.sp)
+                        Spacer(Modifier.width(12.dp))
+                        Text("检查更新", color = Color(0xFF333333), fontSize = 15.sp,
+                            modifier = Modifier.weight(1f))
+                        if (checking) {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text("v${UpdateUtil.CURRENT_VERSION}", color = Color.Gray, fontSize = 12.sp)
+                            Spacer(Modifier.width(4.dp))
+                            Text("›", color = Color.Gray, fontSize = 20.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Row(
                         Modifier.fillMaxWidth().clickable { confirmClear = true }
                             .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -201,6 +282,40 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
     confirmLogout?.let {
         ConfirmDialog("提示", "确定退出登录吗？", "退出", danger = true,
             onConfirm = { vm.logout(); confirmLogout = null }, onDismiss = { confirmLogout = null })
+    }
+
+    // ===== 更新弹窗 =====
+    checkResult?.let { result ->
+        when (result) {
+            is UpdateUtil.CheckResult.Found -> {
+                if (!result.newer) {
+                    InfoDialog("检查更新", "当前已是最新版本 v${UpdateUtil.CURRENT_VERSION}。") { checkResult = null }
+                } else {
+                    // 有更新时 confirmDownload 弹窗负责展示，这里不重复
+                    checkResult = null
+                }
+            }
+            is UpdateUtil.CheckResult.None ->
+                InfoDialog("检查更新", "暂无已发布的版本。") { checkResult = null }
+            is UpdateUtil.CheckResult.Error ->
+                InfoDialog("检查更新", "检查失败：${result.message}\n请确认网络可访问 GitHub。") { checkResult = null }
+        }
+    }
+
+    confirmDownload?.let { info ->
+        val sizeText = if (info.sizeMb > 0) "（${String.format("%.1f", info.sizeMb)} MB）" else ""
+        val notesText = info.notes.takeIf { it.isNotBlank() }?.let { "\n\n更新说明：\n$it" } ?: ""
+        ConfirmDialog(
+            "发现新版本 v${info.version}",
+            "当前 v${UpdateUtil.CURRENT_VERSION} → 新版本 v${info.version}$sizeText$notesText",
+            "下载更新",
+            onConfirm = { startDownload(info); confirmDownload = null },
+            onDismiss = { confirmDownload = null }
+        )
+    }
+
+    updateInfoDialog?.let { msg ->
+        InfoDialog("提示", msg) { updateInfoDialog = null }
     }
 
     pendingRecords?.let { records ->

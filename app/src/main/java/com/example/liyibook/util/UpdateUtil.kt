@@ -24,7 +24,7 @@ object UpdateUtil {
     private const val API_LATEST = "https://api.github.com/repos/CyanGlaze/GuestbookApp/releases/latest"
 
     /** 当前版本，与 app/build.gradle.kts 的 versionName 保持一致 */
-    const val CURRENT_VERSION = "1.0"
+    const val CURRENT_VERSION = "1.1"
 
     data class ReleaseInfo(
         val tag: String,

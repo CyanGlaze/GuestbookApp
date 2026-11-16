@@ -82,3 +82,35 @@ Kotlin + Jetpack Compose + Material 3，单模块 `:app`，纯本地存储。
 
 > 原小程序源码（`pages/`、`utils/`、`images/`、`app.*` 等）已清理出项目（移入回收站，可恢复）。
 > 功能映射见上表；如需追溯，可从系统回收站或 git 历史找回。
+
+## 自动更新（GitHub Releases）
+
+「我的 → 更多操作 → 检查更新」会请求
+`https://api.github.com/repos/CyanGlaze/GuestbookApp/releases/latest`，
+有更高版本时提示下载 APK 并安装。公开仓库无需 token。
+
+**发布新版本流程**：
+1. `app/build.gradle.kts`：递增 `versionCode`，更新 `versionName`。
+2. `util/UpdateUtil.kt`：同步修改 `CURRENT_VERSION` 常量（与 versionName 一致）。
+3. 构建签名包：`./gradlew assembleRelease` → `app/build/outputs/apk/release/app-release.apk`。
+4. 到 https://github.com/CyanGlaze/GuestbookApp/releases 新建 Release，
+   tag 填 `v<版本号>`（如 `v1.1`），上传 APK，发布。
+
+tag 约定 `vX.Y`；App 用点分数字比较版本。安装 APK 需用户在 Android 8+ 授权「安装未知应用」，App 会自动引导。
+
+## Release 签名（本地密钥，不入库）
+
+签名密钥 `app/keystore/liyibook.jks` 与密码均已加入 `.gitignore`，**不会提交到公开仓库**。
+密码等配置读自本地 `local.properties`（同样被忽略）：
+
+```properties
+liyibook.keystore.file=app/keystore/liyibook.jks
+liyibook.keystore.password=<你的密码>
+liyibook.keystore.keyAlias=liyibook
+liyibook.keystore.keyPassword=<你的密码>
+```
+
+- 首次生成密钥（如需重建）：
+  `keytool -genkeypair -keystore app/keystore/liyibook.jks -alias liyibook -keyalg RSA -keysize 2048 -validity 10000`
+- 其他人 clone 后无这些配置时：debug 构建正常，release 退化为未签名（不影响本地调试）。
+- **务必备份 `app/keystore/liyibook.jks` 和 `local.properties`**：密钥丢失将无法为同一应用发布更新（签名不一致会被系统拒绝覆盖安装）。

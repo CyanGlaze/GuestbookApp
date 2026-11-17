@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.liyibook.ui.theme.BrandRed
+import com.example.liyibook.ui.theme.glass
 
 /** 通用确认弹窗（wx.showModal） */
 @Composable
@@ -146,15 +147,12 @@ fun SectionTitle(text: String) {
     )
 }
 
-/** 彩色卡片容器 */
+/** 玻璃卡片容器（iOS 27 液态玻璃） */
 @Composable
 fun PanelCard(content: @Composable () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) { Column(Modifier.padding(16.dp)) { content() } }
+    Box(
+        Modifier.fillMaxWidth().glass(RoundedCornerShape(18.dp)).padding(16.dp)
+    ) { content() }
 }
 
 /** 通用空状态 */

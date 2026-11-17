@@ -55,6 +55,8 @@ import com.example.liyibook.ui.PrimaryButton
 import com.example.liyibook.ui.SectionTitle
 import com.example.liyibook.ui.theme.BrandBlue
 import com.example.liyibook.ui.theme.BrandRed
+import com.example.liyibook.ui.theme.AmbientBackground
+import com.example.liyibook.util.FileUriUtil
 import com.example.liyibook.util.FormatUtil
 import com.example.liyibook.util.UpdateUtil
 import kotlinx.coroutines.launch
@@ -84,6 +86,9 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
     var updateInfoDialog by remember { mutableStateOf<String?>(null) }
     var pendingDownloadId by remember { mutableStateOf<Long?>(null) }
     var pendingApkName by remember { mutableStateOf("") }
+    // Excel 导入写回：持久化授权的文件 Uri
+    var pendingSourceUri by remember { mutableStateOf("") }
+    var permissionDenied by remember { mutableStateOf(false) }
 
     // 下载完成监听：安装 APK
     DisposableEffect(Unit) {
@@ -133,9 +138,12 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
     val totalRecords = books.sumOf { it.count }
     val totalAmount = books.sumOf { it.total }
 
-    val pickExcel = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    val pickExcel = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
-            val name = fileNameOf(context, uri).replace(Regex("\\.[^/.]+$"), "")
+            val name = FileUriUtil.displayName(context, uri).replace(Regex("\\.[^/.]+$"), "")
+            val granted = FileUriUtil.takePermission(context, uri)
+            pendingSourceUri = if (granted) uri.toString() else ""
+            if (!granted) permissionDenied = true
             pendingSource = name
             importName = name
             vm.parseExcel(uri) { pendingRecords = it }
@@ -148,7 +156,8 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
         if (uri != null) vm.importBackup(uri) { parsed -> if (parsed) { /* imported */ } }
     }
 
-    Column(Modifier.fillMaxSize().background(Color(0xFFF2F2F7))) {
+    AmbientBackground {
+    Column(Modifier.fillMaxSize()) {
         // 顶部
         Box(
             Modifier
@@ -195,7 +204,7 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
                 PanelCard {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         QuickAction("📊", "导入账本", "xlsx / xls") {
-                            pickExcel.launch("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                            pickExcel.launch(FileUriUtil.EXCEL_MIME)
                         }
                         QuickAction("📤", "导出备份", "保存数据") {
                             createBackup.launch("礼金账本备份_${FormatUtil.nowStamp()}.json")
@@ -259,12 +268,13 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
                 Spacer(Modifier.height(16.dp))
                 Text("数据仅保存在本机，卸载应用会丢失", fontSize = 11.sp, color = Color.Gray,
                     modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Text("礼金账本 · Android 版 v1.0", fontSize = 11.sp, color = Color.Gray,
+                Text("礼金账本 · Android 版 v1.1", fontSize = 11.sp, color = Color.Gray,
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
     }
+    } // AmbientBackground
 
     // ===== 弹窗 =====
     showAgreement?.let { type ->
@@ -328,7 +338,7 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
                 if (sameIdx >= 0) {
                     overwriteConfirm = true
                 } else {
-                    vm.toast(vm.saveImportedBook(importName, source, records))
+                    vm.toast(vm.saveImportedBook(importName, source, records, pendingSourceUri))
                     nav.navigate("bookshelf")
                 }
             }
@@ -351,6 +361,7 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
                             total = pendingRecords!!.sumOf { it.amount },
                             sourceName = FormatUtil.baseNameOf(source),
                             fileName = FormatUtil.initialFileName(source),
+                            sourceUri = pendingSourceUri.ifBlank { b.sourceUri },
                             date = FormatUtil.todayCN()
                         )
                     }
@@ -360,6 +371,15 @@ fun MineScreen(vm: BookViewModel, nav: NavController) {
                 nav.navigate("bookshelf")
             },
             onDismiss = { overwriteConfirm = false }
+        )
+    }
+
+    if (permissionDenied) {
+        ConfirmDialog(
+            title = "未获得文件修改权限",
+            content = "系统未授予该文件的持久写权限，导入的记录只能保存在本机，无法写回原 Excel。\n\n如需直接修改原文件，请从手机内部存储选择 Excel 文件。",
+            confirmText = "知道了", dismissText = "",
+            onConfirm = { permissionDenied = false }, onDismiss = { permissionDenied = false }
         )
     }
 

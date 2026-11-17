@@ -50,7 +50,7 @@ fun AppNav(vm: BookViewModel) {
             val current = backStack?.destination
             if (tabs.any { t -> current?.hierarchy?.any { it.route == t.route } == true }) {
                 NavigationBar(
-                    containerColor = androidx.compose.ui.graphics.Color(0xFFF7F7FA)
+                    containerColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.72f)
                 ) {
                     tabs.forEach { tab ->
                         val selected = current?.hierarchy?.any { it.route == tab.route } == true

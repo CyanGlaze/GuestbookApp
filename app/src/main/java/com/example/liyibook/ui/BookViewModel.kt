@@ -2,6 +2,7 @@ package com.example.liyibook.ui
 
 import android.app.Application
 import android.net.Uri
+import com.example.liyibook.util.FileUriUtil
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.liyibook.data.Store
@@ -105,11 +106,12 @@ class BookViewModel(app: Application) : AndroidViewModel(app) {
         toast("复制成功")
     }
 
-    /** 保存/覆盖一本账本（导入 Excel 用），返回提示文案 */
+    /** 保存/覆盖一本账本（导入 Excel 用），返回提示文案。sourceUri 是已授权可写回的原文件 Uri。 */
     fun saveImportedBook(
         tempName: String,
         sourceNameRaw: String,
-        records: List<GiftRecord>
+        records: List<GiftRecord>,
+        sourceUri: String = ""
     ): String {
         val base = FormatUtil.baseNameOf(sourceNameRaw)
         val fileName = FormatUtil.initialFileName(base)
@@ -125,6 +127,7 @@ class BookViewModel(app: Application) : AndroidViewModel(app) {
                 total = total,
                 sourceName = base,
                 fileName = fileName,
+                sourceUri = sourceUri.ifBlank { old.sourceUri },
                 date = date
             )
             _books.value = list
@@ -138,6 +141,7 @@ class BookViewModel(app: Application) : AndroidViewModel(app) {
                 title = tempName.trim(),
                 sourceName = base,
                 fileName = fileName,
+                sourceUri = sourceUri,
                 records = records.toMutableList(),
                 count = records.size,
                 total = total,
@@ -148,6 +152,40 @@ class BookViewModel(app: Application) : AndroidViewModel(app) {
         persist()
         return "导入成功"
     }
+
+    /** 重新绑定账本到某个已授权 Excel 文件（详情页「关联原文件」用） */
+    fun attachSource(bookId: String, uriString: String) {
+        updateBook(bookId) { it.copy(sourceUri = uriString) }
+        toast("已关联原文件，修改将自动写回")
+    }
+
+    /** 把某本账本的当前记录覆盖写回它关联的真机 Excel 文件。返回结果用于提示。 */
+    fun syncBookToFile(bookId: String, onResult: ((Boolean) -> Unit)? = null) =
+        viewModelScope.launch(Dispatchers.IO) {
+            val app = getApplication<Application>()
+            val book = _books.value.firstOrNull { it.id == bookId }
+            if (book == null || book.sourceUri.isBlank()) {
+                withContext(Dispatchers.Main) { onResult?.invoke(false) }
+                return@launch
+            }
+            val uri = try { Uri.parse(book.sourceUri) } catch (e: Exception) {
+                withContext(Dispatchers.Main) { onResult?.invoke(false) }
+                return@launch
+            }
+            if (!FileUriUtil.canWrite(app, uri)) {
+                withContext(Dispatchers.Main) {
+                    toast("原文件写权限已失效，请在详情页重新关联")
+                    onResult?.invoke(false)
+                }
+                return@launch
+            }
+            val bytes = XlsxUtil.write(book.records)
+            val ok = FileUriUtil.writeBytes(app, uri, bytes)
+            withContext(Dispatchers.Main) {
+                if (ok) toast("已写回原 Excel 文件") else toast("写回失败，请检查文件是否移动或删除")
+                onResult?.invoke(ok)
+            }
+        }
 
     // ===== 记录 CRUD（详情页）=====
     fun addRecord(bookId: String, record: GiftRecord) = mutateRecords(bookId) {
@@ -182,6 +220,10 @@ class BookViewModel(app: Application) : AndroidViewModel(app) {
             } else b
         }
         persist()
+        // 记录变更后自动写回已关联的真机 Excel（无关联则 no-op）
+        if (_books.value.firstOrNull { it.id == bookId }?.sourceUri?.isNotBlank() == true) {
+            syncBookToFile(bookId)
+        }
     }
 
     // ===== 备份 =====

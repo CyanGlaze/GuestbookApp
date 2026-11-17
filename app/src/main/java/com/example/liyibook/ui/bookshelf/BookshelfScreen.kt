@@ -50,6 +50,9 @@ import com.example.liyibook.ui.EmptyState
 import com.example.liyibook.ui.InputDialog
 import com.example.liyibook.ui.theme.BrandBlue
 import com.example.liyibook.ui.theme.BrandRed
+import com.example.liyibook.ui.theme.AmbientBackground
+import com.example.liyibook.ui.theme.glass
+import com.example.liyibook.util.FileUriUtil
 import com.example.liyibook.util.FormatUtil
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -70,19 +73,27 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
     var editDesc by remember { mutableStateOf("") }
     var editColor by remember { mutableStateOf(Book.DEFAULT_COLORS[0]) }
     var overwriteTarget by remember { mutableStateOf<OverwriteTarget?>(null) }
+    var pendingSourceUri by remember { mutableStateOf("") }
+    var permissionDenied by remember { mutableStateOf(false) }
 
     val context = androidx.compose.ui.platform.LocalContext.current
-    val pickExcel = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    // OpenDocument 才能取得持久化写权限，从而直接写回真机原 Excel
+    val pickExcel = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
-            val name = fileNameOf(context, uri)
+            val name = FileUriUtil.displayName(context, uri)
             val defaultName = name.replace(Regex("\\.[^/.]+$"), "")
+            val granted = FileUriUtil.takePermission(context, uri)
+            pendingSourceUri = if (granted) uri.toString() else ""
+            if (!granted) permissionDenied = true
             pendingSource = defaultName
             importName = defaultName
             vm.parseExcel(uri) { records -> pendingRecords = records }
         }
     }
+    fun launchImport() = pickExcel.launch(FileUriUtil.EXCEL_MIME)
 
-    Column(Modifier.fillMaxSize().background(Color(0xFFF2F2F7))) {
+    AmbientBackground {
+    Column(Modifier.fillMaxSize()) {
         // 顶部渐变头
         Box(
             Modifier
@@ -115,7 +126,7 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
         when {
             locked -> EmptyState("🔒", "请先登录", "登录后即可查看与管理你的礼金账本", "去登录") { nav.navigate("mine") }
             books.isEmpty() -> EmptyState("📖", "书架空空如也", "记录人情往来，从此不再乱", "导入账本") {
-                pickExcel.launch("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                launchImport()
             }
             else -> {
                 Row(
@@ -126,8 +137,7 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
                         if (viewMode == "grid") "☰ 列表" else "▦ 网格",
                         color = BrandBlue, fontSize = 14.sp,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color.White)
+                            .glass(RoundedCornerShape(20.dp), elevation = 4.dp)
                             .clickable { vm.toggleViewMode() }
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     )
@@ -149,7 +159,7 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
                         }
                         item {
                             AddCard(onClick = {
-                                pickExcel.launch("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                                launchImport()
                             })
                         }
                     }
@@ -168,7 +178,7 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
                         }
                         item {
                             AddListRow(onClick = {
-                                pickExcel.launch("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                                launchImport()
                             })
                         }
                     }
@@ -176,6 +186,7 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
             }
         }
     }
+    } // AmbientBackground
 
     // 长按操作菜单
     actionBook?.let { book ->
@@ -244,7 +255,7 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
                         // 覆盖需要二次确认：用另一个弹窗状态
                         overwriteTarget = OverwriteTarget(existing, records, importName.trim(), source)
                     } else {
-                        vm.toast(vm.saveImportedBook(importName, source, records))
+                        vm.toast(vm.saveImportedBook(importName, source, records, pendingSourceUri))
                     }
                 }
             },
@@ -265,6 +276,7 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
                         total = t.records.sumOf { it.amount },
                         sourceName = FormatUtil.baseNameOf(t.source),
                         fileName = FormatUtil.initialFileName(t.source),
+                        sourceUri = pendingSourceUri.ifBlank { b.sourceUri },
                         date = FormatUtil.todayCN()
                     )
                 }
@@ -272,6 +284,15 @@ fun BookshelfScreen(vm: BookViewModel, nav: NavController) {
                 vm.toast("已覆盖更新")
             },
             onDismiss = { overwriteTarget = null }
+        )
+    }
+
+    if (permissionDenied) {
+        ConfirmDialog(
+            title = "未获得文件修改权限",
+            content = "系统未授予该文件的持久写权限，导入的记录只能保存在本机，无法写回原 Excel。\n\n如需直接修改原文件，请在系统文件选择器中选择存储在手机内部存储的 Excel 文件（部分网盘/聊天气泡中的文件不支持写回）。",
+            confirmText = "知道了", dismissText = "",
+            onConfirm = { permissionDenied = false }, onDismiss = { permissionDenied = false }
         )
     }
 }
@@ -340,8 +361,7 @@ private fun AddCard(onClick: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .height(230.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .glass(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -357,8 +377,7 @@ private fun BookListRow(book: Book, onClick: () -> Unit, onLongClick: () -> Unit
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .glass(RoundedCornerShape(12.dp))
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -380,8 +399,7 @@ private fun AddListRow(onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .glass(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically

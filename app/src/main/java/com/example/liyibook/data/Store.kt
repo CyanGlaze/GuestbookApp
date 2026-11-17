@@ -77,6 +77,7 @@ object Store {
                 addProperty("title", b.title)
                 addProperty("sourceName", b.sourceName)
                 addProperty("fileName", b.fileName)
+                addProperty("sourceUri", b.sourceUri)
                 addProperty("color", b.color)
                 addProperty("desc", b.desc)
                 addProperty("count", b.count)
@@ -121,6 +122,7 @@ object Store {
                     title = str(o, "title", "name"),
                     sourceName = str(o, "sourceName"),
                     fileName = str(o, "fileName"),
+                    sourceUri = str(o, "sourceUri"),
                     color = str(o, "color").ifBlank { Book.DEFAULT_COLORS[0] },
                     desc = str(o, "desc"),
                     records = records,

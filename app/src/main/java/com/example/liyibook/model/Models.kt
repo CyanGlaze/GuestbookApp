@@ -18,6 +18,7 @@ data class Book(
     val title: String = "",
     val sourceName: String = "",   // 导入文件基础名（同一份 Excel 的识别主键）
     val fileName: String = "",     // 导出的 xlsx 文件名
+    val sourceUri: String = "",    // 已授权的真机 Excel 文件 URI（持久化，用于直接写回原文件）
     val color: String = DEFAULT_COLORS[0],
     val desc: String = "",
     val records: MutableList<GiftRecord> = mutableListOf(),

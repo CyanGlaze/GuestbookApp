@@ -52,6 +52,9 @@ import com.example.liyibook.ui.ActionSheet
 import com.example.liyibook.ui.BookViewModel
 import com.example.liyibook.ui.ConfirmDialog
 import com.example.liyibook.ui.theme.BrandRed
+import com.example.liyibook.ui.theme.AmbientBackground
+import com.example.liyibook.ui.theme.glass
+import com.example.liyibook.util.FileUriUtil
 import com.example.liyibook.util.FormatUtil
 import com.example.liyibook.util.PinyinUtil
 
@@ -74,10 +77,23 @@ fun DetailScreen(vm: BookViewModel, bookId: String, onBack: () -> Unit) {
     var deleteRecord by remember { mutableStateOf<GiftRecord?>(null) }
     var currentLetter by remember { mutableStateOf('A') }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     ) { uri: Uri? -> if (uri != null) vm.exportExcel(bookId, uri) }
+
+    // 关联/重新授权真机 Excel 原文件（可直接写回）
+    val relinkLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            if (FileUriUtil.takePermission(context, uri)) {
+                vm.attachSource(bookId, uri.toString())
+                vm.syncBookToFile(bookId)
+            } else {
+                vm.toast("未获得该文件写权限，请从手机内部存储选择")
+            }
+        }
+    }
 
     val groups = remember(book, searchKey) { buildGroups(book, searchKey) }
     val totalCount = book?.records?.size ?: 0
@@ -95,7 +111,8 @@ fun DetailScreen(vm: BookViewModel, bookId: String, onBack: () -> Unit) {
 
     val listState = rememberLazyListState()
 
-    Box(Modifier.fillMaxSize().background(Color(0xFFF2F2F7))) {
+    AmbientBackground {
+    Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             // 顶部
             Box(
@@ -114,7 +131,7 @@ fun DetailScreen(vm: BookViewModel, bookId: String, onBack: () -> Unit) {
             }
 
             // 搜索框
-            Box(Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 10.dp)) {
+            Box(Modifier.fillMaxWidth().glass(androidx.compose.foundation.shape.RoundedCornerShape(0.dp), elevation = 2.dp).padding(horizontal = 16.dp, vertical = 10.dp)) {
                 OutlinedTextField(
                     value = searchKey,
                     onValueChange = { searchKey = it },
@@ -125,10 +142,15 @@ fun DetailScreen(vm: BookViewModel, bookId: String, onBack: () -> Unit) {
             }
 
             Row(
-                Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                Modifier.fillMaxWidth().glass(androidx.compose.foundation.shape.RoundedCornerShape(0.dp), elevation = 2.dp).padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("共 $totalCount 人", fontSize = 12.sp, color = Color.Gray)
+                if (book.sourceUri.isNotBlank()) {
+                    Text("🔗 修改自动写回原文件", fontSize = 11.sp, color = Color(0xFF5B6FD8),
+                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
+                }
                 Text("合计 ¥${FormatUtil.money(totalAmount)}", fontSize = 12.sp, color = BrandRed,
                     fontWeight = FontWeight.SemiBold)
             }
@@ -204,6 +226,10 @@ fun DetailScreen(vm: BookViewModel, bookId: String, onBack: () -> Unit) {
                             fabOpen = false
                             exportLauncher.launch("${FormatUtil.baseNameOf(book.title)}-礼金记录.xlsx")
                         }
+                        FabOption("🔗", if (book.sourceUri.isBlank()) "关联原文件" else "更新关联") {
+                            fabOpen = false
+                            relinkLauncher.launch(FileUriUtil.EXCEL_MIME)
+                        }
                         FabOption("＋", "添加") {
                             fabOpen = false
                             editing = EditTarget(true, GiftRecord(), GiftRecord())
@@ -220,6 +246,7 @@ fun DetailScreen(vm: BookViewModel, bookId: String, onBack: () -> Unit) {
             }
         }
     }
+    } // AmbientBackground
 
     actionRecord?.let { rec ->
         ActionSheet(
@@ -291,7 +318,7 @@ private fun GroupHeader(letter: String) {
         letter,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFEDEDF2))
+            .glass(androidx.compose.foundation.shape.RoundedCornerShape(0.dp), elevation = 2.dp)
             .padding(horizontal = 16.dp, vertical = 6.dp),
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
@@ -315,8 +342,7 @@ private fun RecordCard(rec: GiftRecord, key: String, onClick: () -> Unit, onLong
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 5.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .glass(RoundedCornerShape(12.dp), elevation = 6.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(14.dp)
     ) {
@@ -364,8 +390,7 @@ private fun FabOption(icon: String, label: String, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.White)
+            .glass(RoundedCornerShape(20.dp), elevation = 8.dp)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
